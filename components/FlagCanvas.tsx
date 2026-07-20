@@ -197,8 +197,7 @@ function Banner({ paused }: { paused: boolean }) {
     }
 
     target += clickBoost.current;
-    // punchy burst that eases back out
-    clickBoost.current *= Math.exp(-dt * 0.9);
+    clickBoost.current = Math.max(0, clickBoost.current - dt * 0.05);
 
     // ease amplitude only — phase advances at a constant rate above, so the
     // wave never jumps; hover just makes it wave more
@@ -238,8 +237,7 @@ function Banner({ paused }: { paused: boolean }) {
         }}
         onClick={(e) => {
           e.stopPropagation();
-          // each click adds a strong gust (stacks a little if clicked rapidly)
-          clickBoost.current = Math.min(clickBoost.current + 0.28, 0.6);
+          clickBoost.current = Math.min(clickBoost.current + 0.07, 0.32);
         }}
       >
         <planeGeometry args={[PLANE_W + 0.3, PLANE_H + 0.3]} />
