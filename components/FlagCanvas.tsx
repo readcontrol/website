@@ -206,10 +206,11 @@ function Banner({ paused }: { paused: boolean }) {
     const mat = new THREE.MeshStandardMaterial({
       map,
       normalMap,
-      normalScale: new THREE.Vector2(0.6, 0.6),
+      normalScale: new THREE.Vector2(0.9, 0.9),
       roughnessMap,
-      roughness: 0.85,
+      roughness: 0.82,
       metalness: 0,
+      envMapIntensity: 0.5, // less IBL wash so folds keep their shadows
       side: THREE.DoubleSide,
       transparent: true,
       alphaTest: 0.5,
@@ -223,6 +224,7 @@ function Banner({ paused }: { paused: boolean }) {
         `
         uniform float uTime;
         uniform float uAmp;
+        varying float vDepth;
 
         vec3 clothPos(vec3 p, vec2 uvv) {
           float t = uTime;
@@ -241,7 +243,8 @@ function Banner({ paused }: { paused: boolean }) {
 
       shader.vertexShader = shader.vertexShader.replace(
         "#include <begin_vertex>",
-        `vec3 transformed = clothPos(position, uv);`,
+        `vec3 transformed = clothPos(position, uv);
+         vDepth = transformed.z;`,
       );
 
       shader.vertexShader = shader.vertexShader.replace(
@@ -253,6 +256,16 @@ function Banner({ paused }: { paused: boolean }) {
         vec3 pY = clothPos(position + vec3(0.0, e, 0.0), uv + vec2(0.0, e * 0.2));
         vec3 objectNormal = normalize(cross(pX - pC, pY - pC));
         `,
+      );
+
+      // fold depth: darken the wave troughs like ambient occlusion in the
+      // concavities, so the cloth reads as folded rather than flat
+      shader.fragmentShader =
+        `varying float vDepth;\n` + shader.fragmentShader;
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "#include <color_fragment>",
+        `#include <color_fragment>
+         diffuseColor.rgb *= clamp(1.0 + vDepth * 0.85, 0.6, 1.1);`,
       );
     };
 
@@ -362,18 +375,20 @@ export default function FlagCanvas({
     >
       <fog attach="fog" args={["#0d0d0f", 9, 18]} />
 
-      <ambientLight intensity={0.65} />
-      {/* near-neutral key so the gray cloth stays gray */}
-      <directionalLight position={[4, 5, 5]} intensity={1.4} color="#f6f5f2" />
+      {/* low ambient so the wave troughs stay in shadow (depth) */}
+      <ambientLight intensity={0.3} />
+      {/* strong near-neutral key — carves the folds with light and shadow */}
+      <directionalLight position={[4, 5, 5]} intensity={2.1} color="#f6f5f2" />
       <spotLight
         position={[-5, 3, -4]}
         angle={0.5}
         penumbra={1}
-        intensity={22}
+        intensity={18}
         color="#8ba6ff"
       />
-      <pointLight position={[-2, -1, 4]} intensity={9} color="#ffffff" />
-      <pointLight position={[2, 1, 5]} intensity={5} color="#ffffff" />
+      {/* gentle fills — enough to lift the deepest troughs, not flatten them */}
+      <pointLight position={[-2, -1, 4]} intensity={3.5} color="#ffffff" />
+      <pointLight position={[2, 1, 5]} intensity={2.5} color="#ffffff" />
 
       <Environment resolution={256} frames={1}>
         <Lightformer
