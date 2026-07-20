@@ -13,15 +13,27 @@ const FlagCanvas = dynamic(() => import("./FlagCanvas"), {
 
 export default function WavingFlag() {
   const [reduced, setReduced] = useState(false);
+  const [desktop, setDesktop] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const on = () => setReduced(mq.matches);
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
+    const rm = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const dq = window.matchMedia("(min-width: 821px)"); // matches the CSS breakpoint
+    const sync = () => {
+      setReduced(rm.matches);
+      setDesktop(dq.matches);
+    };
+    sync();
+    rm.addEventListener("change", sync);
+    dq.addEventListener("change", sync);
+    return () => {
+      rm.removeEventListener("change", sync);
+      dq.removeEventListener("change", sync);
+    };
   }, []);
+
+  // Never render (nor load three.js) on mobile.
+  if (!desktop) return null;
 
   return (
     <div

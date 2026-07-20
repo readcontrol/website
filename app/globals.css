@@ -288,18 +288,12 @@ p {
   color: var(--text-tertiary);
 }
 @media (max-width: 820px) {
-  /* flag drops in from the top; text sits below it */
+  /* no flag on mobile — it isn't rendered at all */
   .flag-top {
-    top: 0;
-    height: 380px;
-    justify-content: center;
-  }
-  .flag-canvas {
-    width: min(320px, 78%);
+    display: none;
   }
   .hero {
     text-align: center;
-    padding-top: 360px;
     min-height: 0;
   }
   .hero-copy {
