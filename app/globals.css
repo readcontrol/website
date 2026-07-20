@@ -118,11 +118,43 @@ p {
   transform: translateY(1px);
 }
 .btn-primary {
-  background: var(--cream);
-  color: #1a1a1a;
+  position: relative;
+  overflow: hidden; /* clip the reflection to the pill */
+  isolation: isolate;
+  color: #17181a;
+  /* convex, top-lit gray so light appears to catch the surface */
+  background: linear-gradient(177deg, #e8e9eb 0%, #cfd0d4 50%, #c1c2c7 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.16),
+    0 6px 18px -8px rgba(0, 0, 0, 0.6);
+}
+/* diagonal reflection streak, sitting above the fill but below the label */
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    118deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.6) 40%,
+    rgba(255, 255, 255, 0.12) 49%,
+    transparent 60%
+  );
+  transform: translateX(-10%);
+  transition: transform 0.6s ease;
 }
 .btn-primary:hover {
-  background: #e6e7e9;
+  background: linear-gradient(177deg, #f1f2f4 0%, #d8d9dd 50%, #caccd0 100%);
+}
+.btn-primary:hover::before {
+  transform: translateX(35%); /* sweep the reflection across */
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary::before {
+    transition: none;
+  }
 }
 .btn-ghost {
   background: transparent;
