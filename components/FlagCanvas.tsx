@@ -24,7 +24,7 @@ function useClothTextures() {
     const w = 512;
     const h = 1024;
     const notch = 130;
-    const P = 4.5; // thread pitch in px (warp = vertical, weft = horizontal)
+    const P = 6.8; // thread pitch in px — coarser = heavier, thicker cloth
 
     // deterministic per-thread jitter so threads vary but the result is stable
     const hash = (n: number) => {
@@ -76,8 +76,9 @@ function useClothTextures() {
       for (let x = 0; x < w; x++) {
         const i = y * w + x;
         const hgt = H[i];
-        // crowns brighter, valleys (weave lines) darker
-        let shade = 0.8 + hgt * 0.3;
+        // crowns brighter, valleys (weave lines) darker — more contrast reads
+        // as a chunkier, heavier weave
+        let shade = 0.72 + hgt * 0.42;
         // gentle large-scale mottle for a lived-in fabric feel
         shade +=
           Math.sin(x * 0.012 + y * 0.006) * 0.02 +
@@ -120,7 +121,7 @@ function useClothTextures() {
     const nctx = nc.getContext("2d")!;
     const nimg = nctx.createImageData(w, h);
     const nd = nimg.data;
-    const strength = 2.4;
+    const strength = 3.3; // deeper thread relief
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const xm = (x - 1 + w) % w;
@@ -206,7 +207,7 @@ function Banner({ paused }: { paused: boolean }) {
     const mat = new THREE.MeshStandardMaterial({
       map,
       normalMap,
-      normalScale: new THREE.Vector2(0.9, 0.9),
+      normalScale: new THREE.Vector2(1.15, 1.15),
       roughnessMap,
       roughness: 0.82,
       metalness: 0,
