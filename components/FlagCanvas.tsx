@@ -95,8 +95,8 @@ function useClothTextures() {
 function Banner({ paused }: { paused: boolean }) {
   const { map, roughnessMap } = useClothTextures();
 
-  const idleAmplitude = 0.2; // waves noticeably
-  const hoverExtra = 0.18; // sustained extra wave while hovering
+  const idleAmplitude = 0.28; // waves noticeably at rest
+  const hoverExtra = 0.16; // sustained extra wave while hovering
 
   const uniforms = useRef({
     uTime: { value: 0 },
