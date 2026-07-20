@@ -236,6 +236,21 @@ p {
 .flag-canvas canvas {
   display: block;
 }
+/* keep the flag hidden until the 3D scene has drawn, then fade it in */
+.flag-fade {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.flag-fade[data-ready="true"] {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flag-fade {
+    transition: none;
+  }
+}
 
 /* ---------- Hero ---------- */
 .hero {

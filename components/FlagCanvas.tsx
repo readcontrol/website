@@ -229,7 +229,13 @@ function Banner({ paused }: { paused: boolean }) {
   );
 }
 
-export default function FlagCanvas({ paused = false }: { paused?: boolean }) {
+export default function FlagCanvas({
+  paused = false,
+  onReady,
+}: {
+  paused?: boolean;
+  onReady?: () => void;
+}) {
   return (
     <Canvas
       camera={{ position: [0.2, 0.4, 6.0], fov: 42 }}
@@ -242,6 +248,13 @@ export default function FlagCanvas({ paused = false }: { paused?: boolean }) {
         toneMappingExposure: 1.05,
       }}
       style={{ width: "100%", height: "100%" }}
+      onCreated={() => {
+        // reveal only after a couple of frames have actually been drawn,
+        // so the flag never flashes in half-rendered
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => onReady?.()),
+        );
+      }}
     >
       <fog attach="fog" args={["#0d0d0f", 9, 18]} />
 

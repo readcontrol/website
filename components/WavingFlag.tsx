@@ -3,32 +3,17 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-/** Static gray bookmark — shown while the 3D scene loads and as a fallback. */
-function FlagFallback() {
-  return (
-    <svg
-      viewBox="0 0 150 236"
-      width="180"
-      height="283"
-      aria-hidden="true"
-      style={{ maxWidth: "70%", height: "auto", opacity: 0.9 }}
-    >
-      <path
-        d="M0 0h150v236l-75-46-75 46V0Z"
-        fill="#c4c5c9"
-      />
-    </svg>
-  );
-}
-
 // WebGL + canvas texture generation must run client-side only (no SSR).
+// No loading placeholder — we keep the space empty until the 3D scene is
+// actually ready, then fade it in (avoids a small bookmark popping to full size).
 const FlagCanvas = dynamic(() => import("./FlagCanvas"), {
   ssr: false,
-  loading: () => <FlagFallback />,
+  loading: () => null,
 });
 
 export default function WavingFlag() {
   const [reduced, setReduced] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -44,7 +29,9 @@ export default function WavingFlag() {
       role="img"
       aria-label="Read Control — an interactive waving bookmark. Hover to stir it; click for a gust."
     >
-      <FlagCanvas paused={reduced} />
+      <div className="flag-fade" data-ready={ready}>
+        <FlagCanvas paused={reduced} onReady={() => setReady(true)} />
+      </div>
     </div>
   );
 }
