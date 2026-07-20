@@ -202,7 +202,7 @@ function Banner({ paused }: { paused: boolean }) {
   });
 
   return (
-    <group rotation={[0, -0.3, 0.03]} position={[0.15, 0.35, 0]}>
+    <group rotation={[0, -0.3, 0.03]} position={[0.15, 0.85, 0]}>
       <mesh material={material}>
         <planeGeometry args={[PLANE_W, PLANE_H, 150, 220]} />
       </mesh>
@@ -284,8 +284,8 @@ export default function FlagCanvas({ paused = false }: { paused?: boolean }) {
       <Banner paused={paused} />
 
       <ContactShadows
-        position={[0, -2.9, 0]}
-        opacity={0.25}
+        position={[0, -2.4, 0]}
+        opacity={0.22}
         scale={11}
         blur={2.8}
         far={4.5}
