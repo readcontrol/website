@@ -8,52 +8,22 @@ import * as THREE from "three";
 // cloth plane size (world units)
 const PLANE_W = 2.9;
 const PLANE_H = 5.0;
+const THICKNESS = 0.24; // gap between front face and dark back layer
+
+type ClothUniforms = {
+  current: { uTime: { value: number }; uAmp: { value: number } };
+};
 
 /* ----------------------------------------------------------------
-   Procedural woven-cloth textures.
-
-   A plain-weave height field (interlaced warp/weft threads) drives three
-   maps so the fabric reads as real cloth:
-     • albedo     — gray shaded by the weave (crowns lit, valleys darker)
-     • normalMap  — micro-bump so light catches each thread as it waves
-     • roughness  — thread crowns a touch shinier than the valleys
-   The swallowtail silhouette lives in the albedo's alpha (alphaTest cuts it).
+   Solid light-gray cloth: a plain albedo with the swallowtail shape in
+   its alpha and soft edge shading, plus a lightly-varied roughness.
    ---------------------------------------------------------------- */
 function useClothTextures() {
   return useMemo(() => {
     const w = 512;
     const h = 1024;
     const notch = 130;
-    const P = 6.8; // thread pitch in px — coarser = heavier, thicker cloth
 
-    // deterministic per-thread jitter so threads vary but the result is stable
-    const hash = (n: number) => {
-      const s = Math.sin(n) * 43758.5453;
-      return s - Math.floor(s);
-    };
-
-    // --- 1. weave height field --------------------------------------------
-    const H = new Float32Array(w * h);
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const cx = x / P;
-        const cy = y / P;
-        const ix = Math.floor(cx);
-        const iy = Math.floor(cy);
-        // rounded thread cross-sections
-        const warp = Math.sin(Math.PI * (cx - ix));
-        const weft = Math.sin(Math.PI * (cy - iy));
-        // plain weave: alternate which thread rides on top
-        const overWarp = ((ix + iy) & 1) === 0;
-        let hgt = overWarp ? warp * 0.92 + weft * 0.3 : weft * 0.92 + warp * 0.3;
-        // subtle per-thread thickness variation + fibre fuzz
-        hgt += (overWarp ? hash(ix * 1.7) : hash(iy * 1.3 + 9.1)) * 0.08 - 0.04;
-        hgt += (Math.random() - 0.5) * 0.09;
-        H[y * w + x] = hgt;
-      }
-    }
-
-    // helper: draw the swallowtail path (used for masking / clipping)
     const swallowtail = (c: CanvasRenderingContext2D) => {
       c.beginPath();
       c.moveTo(0, 0);
@@ -64,48 +34,32 @@ function useClothTextures() {
       c.closePath();
     };
 
-    // --- 2. albedo (with swallowtail alpha) -------------------------------
+    // --- albedo (solid gray + swallowtail alpha) ---
     const canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d")!;
-    const img = ctx.createImageData(w, h);
-    const d = img.data;
-    const base = [196, 197, 201];
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const i = y * w + x;
-        const hgt = H[i];
-        // crowns brighter, valleys (weave lines) darker — more contrast reads
-        // as a chunkier, heavier weave
-        let shade = 0.72 + hgt * 0.42;
-        // gentle large-scale mottle for a lived-in fabric feel
-        shade +=
-          Math.sin(x * 0.012 + y * 0.006) * 0.02 +
-          Math.sin(x * 0.03 - y * 0.017) * 0.015;
-        const o = i * 4;
-        d[o] = Math.max(0, Math.min(255, base[0] * shade));
-        d[o + 1] = Math.max(0, Math.min(255, base[1] * shade));
-        d[o + 2] = Math.max(0, Math.min(255, base[2] * shade));
-        d[o + 3] = 255;
-      }
-    }
-    ctx.putImageData(img, 0, 0);
-    // keep only the swallowtail shape
-    ctx.globalCompositeOperation = "destination-in";
-    swallowtail(ctx);
-    ctx.fillStyle = "#fff";
-    ctx.fill();
-    ctx.globalCompositeOperation = "source-over";
-    // soft edge darkening, clipped to the shape
     ctx.save();
     swallowtail(ctx);
     ctx.clip();
+    ctx.fillStyle = "#c4c5c9";
+    ctx.fillRect(0, 0, w, h);
+    // faint grain so it isn't perfectly flat
+    const img = ctx.getImageData(0, 0, w, h);
+    const dd = img.data;
+    for (let i = 0; i < dd.length; i += 4) {
+      const n = (Math.random() - 0.5) * 5;
+      dd[i] += n;
+      dd[i + 1] += n;
+      dd[i + 2] += n;
+    }
+    ctx.putImageData(img, 0, 0);
+    // soft edge darkening, clipped to the shape
     const vg = ctx.createLinearGradient(0, 0, w, 0);
-    vg.addColorStop(0, "rgba(0,0,0,0.12)");
+    vg.addColorStop(0, "rgba(0,0,0,0.14)");
     vg.addColorStop(0.12, "rgba(0,0,0,0)");
     vg.addColorStop(0.88, "rgba(0,0,0,0)");
-    vg.addColorStop(1, "rgba(0,0,0,0.1)");
+    vg.addColorStop(1, "rgba(0,0,0,0.12)");
     ctx.fillStyle = vg;
     ctx.fillRect(0, 0, w, h);
     ctx.restore();
@@ -114,71 +68,94 @@ function useClothTextures() {
     map.anisotropy = 8;
     map.colorSpace = THREE.SRGBColorSpace;
 
-    // --- 3. normal map (from the height gradient) -------------------------
-    const nc = document.createElement("canvas");
-    nc.width = w;
-    nc.height = h;
-    const nctx = nc.getContext("2d")!;
-    const nimg = nctx.createImageData(w, h);
-    const nd = nimg.data;
-    const strength = 3.3; // deeper thread relief
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const xm = (x - 1 + w) % w;
-        const xp = (x + 1) % w;
-        const ym = (y - 1 + h) % h;
-        const yp = (y + 1) % h;
-        const dx = (H[y * w + xm] - H[y * w + xp]) * strength;
-        const dy = (H[ym * w + x] - H[yp * w + x]) * strength;
-        const len = Math.hypot(dx, dy, 1);
-        const o = (y * w + x) * 4;
-        nd[o] = ((dx / len) * 0.5 + 0.5) * 255;
-        nd[o + 1] = ((dy / len) * 0.5 + 0.5) * 255;
-        nd[o + 2] = (1 / len) * 0.5 * 255 + 127.5;
-        nd[o + 3] = 255;
-      }
-    }
-    nctx.putImageData(nimg, 0, 0);
-    const normalMap = new THREE.CanvasTexture(nc);
-    normalMap.colorSpace = THREE.NoColorSpace; // linear data, not sRGB
-    normalMap.anisotropy = 8;
-
-    // --- 4. roughness (crowns a touch shinier) ----------------------------
+    // --- roughness (matte, lightly varied) ---
     const rc = document.createElement("canvas");
     rc.width = w;
     rc.height = h;
     const rctx = rc.getContext("2d")!;
-    const rimg = rctx.createImageData(w, h);
+    rctx.fillStyle = "#dcdcdc";
+    rctx.fillRect(0, 0, w, h);
+    const rimg = rctx.getImageData(0, 0, w, h);
     const rd = rimg.data;
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const i = y * w + x;
-        // higher threads catch a little more light (lower roughness)
-        const v = Math.max(
-          0,
-          Math.min(255, 214 - H[i] * 46 + (Math.random() - 0.5) * 20),
-        );
-        const o = i * 4;
-        rd[o] = rd[o + 1] = rd[o + 2] = v;
-        rd[o + 3] = 255;
-      }
+    for (let i = 0; i < rd.length; i += 4) {
+      const n = (Math.random() - 0.5) * 24;
+      rd[i] += n;
+      rd[i + 1] += n;
+      rd[i + 2] += n;
     }
     rctx.putImageData(rimg, 0, 0);
     const roughnessMap = new THREE.CanvasTexture(rc);
     roughnessMap.colorSpace = THREE.NoColorSpace;
 
-    return { map, normalMap, roughnessMap };
+    return { map, roughnessMap };
   }, []);
 }
 
+/* Inject the traveling-wave displacement + fold-depth shading into a standard
+   material. Shared by the front face and the dark back layer so both waves stay
+   perfectly in sync. */
+function installClothShader(
+  mat: THREE.MeshStandardMaterial,
+  uniforms: ClothUniforms,
+) {
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = uniforms.current.uTime;
+    shader.uniforms.uAmp = uniforms.current.uAmp;
+
+    shader.vertexShader =
+      `
+      uniform float uTime;
+      uniform float uAmp;
+      varying float vDepth;
+
+      vec3 clothPos(vec3 p, vec2 uvv) {
+        float t = uTime;
+        float freedom = pow(1.0 - uvv.y, 1.3);
+        float w1 = sin(uvv.y * 2.6 + uvv.x * 1.2 - t * 1.4);
+        float w2 = sin(uvv.y * 1.4 - t * 0.9);
+        float w3 = sin(uvv.x * 2.0 + uvv.y * 3.4 - t * 1.9);
+        float wave = (w1 * 0.55 + w2 * 0.32 + w3 * 0.13) * uAmp * freedom;
+        p.z += wave;
+        // gentle constant-rate sideways sway, independent of amplitude
+        p.x += sin(t * 0.5) * 0.02 * freedom;
+        return p;
+      }
+      ` + shader.vertexShader;
+
+    shader.vertexShader = shader.vertexShader.replace(
+      "#include <begin_vertex>",
+      `vec3 transformed = clothPos(position, uv);
+       vDepth = transformed.z;`,
+    );
+
+    shader.vertexShader = shader.vertexShader.replace(
+      "#include <beginnormal_vertex>",
+      `
+      float e = 0.01;
+      vec3 pC = clothPos(position, uv);
+      vec3 pX = clothPos(position + vec3(e, 0.0, 0.0), uv + vec2(e * 0.345, 0.0));
+      vec3 pY = clothPos(position + vec3(0.0, e, 0.0), uv + vec2(0.0, e * 0.2));
+      vec3 objectNormal = normalize(cross(pX - pC, pY - pC));
+      `,
+    );
+
+    // darken the wave troughs like AO in the concavities
+    shader.fragmentShader = `varying float vDepth;\n` + shader.fragmentShader;
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <color_fragment>",
+      `#include <color_fragment>
+       diffuseColor.rgb *= clamp(1.0 + vDepth * 0.85, 0.6, 1.1);`,
+    );
+  };
+}
+
 /* ----------------------------------------------------------------
-   Waving cloth: PBR material with a traveling-wave displacement in
-   the vertex shader (pinned at the top, free at the swallowtail
-   bottom). Amplitude (uAmp) rises on hover / click. Normals are
-   recomputed by finite differences so lighting stays correct.
+   Waving cloth banner with real thickness: a lit front face and a dark
+   back layer set behind it, both driven by the same wave shader so the
+   offset between them reads as the flag's edge.
    ---------------------------------------------------------------- */
 function Banner({ paused }: { paused: boolean }) {
-  const { map, normalMap, roughnessMap } = useClothTextures();
+  const { map, roughnessMap } = useClothTextures();
 
   const idleAmplitude = 0.28; // waves noticeably at rest
   const hoverExtra = 0.16; // sustained extra wave while hovering
@@ -203,75 +180,37 @@ function Banner({ paused }: { paused: boolean }) {
     gustActive.current = false;
   };
 
-  const material = useMemo(() => {
+  // lit front face
+  const frontMat = useMemo(() => {
     const mat = new THREE.MeshStandardMaterial({
       map,
-      normalMap,
-      normalScale: new THREE.Vector2(1.15, 1.15),
       roughnessMap,
-      roughness: 0.82,
+      roughness: 0.95,
       metalness: 0,
-      envMapIntensity: 0.5, // less IBL wash so folds keep their shadows
+      envMapIntensity: 0.5,
       side: THREE.DoubleSide,
       transparent: true,
       alphaTest: 0.5,
     });
-
-    mat.onBeforeCompile = (shader) => {
-      shader.uniforms.uTime = uniforms.current.uTime;
-      shader.uniforms.uAmp = uniforms.current.uAmp;
-
-      shader.vertexShader =
-        `
-        uniform float uTime;
-        uniform float uAmp;
-        varying float vDepth;
-
-        vec3 clothPos(vec3 p, vec2 uvv) {
-          float t = uTime;
-          float freedom = pow(1.0 - uvv.y, 1.3);
-          float w1 = sin(uvv.y * 2.6 + uvv.x * 1.2 - t * 1.4);
-          float w2 = sin(uvv.y * 1.4 - t * 0.9);
-          float w3 = sin(uvv.x * 2.0 + uvv.y * 3.4 - t * 1.9);
-          float wave = (w1 * 0.55 + w2 * 0.32 + w3 * 0.13) * uAmp * freedom;
-          p.z += wave;
-          // gentle constant-rate sideways sway, independent of amplitude,
-          // so hovering only changes how much it waves — not where it sits
-          p.x += sin(t * 0.5) * 0.02 * freedom;
-          return p;
-        }
-        ` + shader.vertexShader;
-
-      shader.vertexShader = shader.vertexShader.replace(
-        "#include <begin_vertex>",
-        `vec3 transformed = clothPos(position, uv);
-         vDepth = transformed.z;`,
-      );
-
-      shader.vertexShader = shader.vertexShader.replace(
-        "#include <beginnormal_vertex>",
-        `
-        float e = 0.01;
-        vec3 pC = clothPos(position, uv);
-        vec3 pX = clothPos(position + vec3(e, 0.0, 0.0), uv + vec2(e * 0.345, 0.0));
-        vec3 pY = clothPos(position + vec3(0.0, e, 0.0), uv + vec2(0.0, e * 0.2));
-        vec3 objectNormal = normalize(cross(pX - pC, pY - pC));
-        `,
-      );
-
-      // fold depth: darken the wave troughs like ambient occlusion in the
-      // concavities, so the cloth reads as folded rather than flat
-      shader.fragmentShader =
-        `varying float vDepth;\n` + shader.fragmentShader;
-      shader.fragmentShader = shader.fragmentShader.replace(
-        "#include <color_fragment>",
-        `#include <color_fragment>
-         diffuseColor.rgb *= clamp(1.0 + vDepth * 0.85, 0.6, 1.1);`,
-      );
-    };
-
+    installClothShader(mat, uniforms);
     return mat;
-  }, [map, normalMap, roughnessMap]);
+  }, [map, roughnessMap]);
+
+  // dark underside — sits THICKNESS behind the front to form the edge
+  const backMat = useMemo(() => {
+    const mat = new THREE.MeshStandardMaterial({
+      map, // reuse for the swallowtail alpha
+      color: new THREE.Color(0x35363a),
+      roughness: 1,
+      metalness: 0,
+      envMapIntensity: 0.15,
+      side: THREE.DoubleSide,
+      transparent: true,
+      alphaTest: 0.5,
+    });
+    installClothShader(mat, uniforms);
+    return mat;
+  }, [map]);
 
   useFrame((_, delta) => {
     if (paused) return;
@@ -299,8 +238,6 @@ function Banner({ paused }: { paused: boolean }) {
     target += clickBoost.current;
     clickBoost.current = Math.max(0, clickBoost.current - dt * 0.05);
 
-    // ease amplitude only — phase advances at a constant rate above, so the
-    // wave never jumps; hover just makes it wave more
     const smoothing = 1 - Math.exp(-dt * 6);
     uniforms.current.uAmp.value +=
       (target - uniforms.current.uAmp.value) * smoothing;
@@ -318,7 +255,12 @@ function Banner({ paused }: { paused: boolean }) {
         color="#eaf1ff"
       />
 
-      <mesh material={material}>
+      {/* dark back layer — its offset from the front reads as thickness */}
+      <mesh material={backMat} position={[0, 0, -THICKNESS]}>
+        <planeGeometry args={[PLANE_W, PLANE_H, 150, 220]} />
+      </mesh>
+      {/* lit front face */}
+      <mesh material={frontMat}>
         <planeGeometry args={[PLANE_W, PLANE_H, 150, 220]} />
       </mesh>
 
@@ -369,9 +311,7 @@ export default function FlagCanvas({
       onCreated={() => {
         // reveal only after a couple of frames have actually been drawn,
         // so the flag never flashes in half-rendered
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => onReady?.()),
-        );
+        requestAnimationFrame(() => requestAnimationFrame(() => onReady?.()));
       }}
     >
       <fog attach="fog" args={["#0d0d0f", 9, 18]} />
