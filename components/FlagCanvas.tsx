@@ -101,7 +101,6 @@ function Banner({ paused }: { paused: boolean }) {
   const uniforms = useRef({
     uTime: { value: 0 },
     uAmp: { value: idleAmplitude },
-    uSpeed: { value: 1 },
   });
   const gustActive = useRef(false);
   const gustElapsed = useRef(0);
@@ -132,23 +131,23 @@ function Banner({ paused }: { paused: boolean }) {
     mat.onBeforeCompile = (shader) => {
       shader.uniforms.uTime = uniforms.current.uTime;
       shader.uniforms.uAmp = uniforms.current.uAmp;
-      shader.uniforms.uSpeed = uniforms.current.uSpeed;
 
       shader.vertexShader =
         `
         uniform float uTime;
         uniform float uAmp;
-        uniform float uSpeed;
 
         vec3 clothPos(vec3 p, vec2 uvv) {
-          float t = uTime * uSpeed;
+          float t = uTime;
           float freedom = pow(1.0 - uvv.y, 1.3);
           float w1 = sin(uvv.y * 2.6 + uvv.x * 1.2 - t * 1.4);
           float w2 = sin(uvv.y * 1.4 - t * 0.9);
           float w3 = sin(uvv.x * 2.0 + uvv.y * 3.4 - t * 1.9);
           float wave = (w1 * 0.55 + w2 * 0.32 + w3 * 0.13) * uAmp * freedom;
           p.z += wave;
-          p.x += sin(t * 0.5) * uAmp * 0.04 * freedom;
+          // gentle constant-rate sideways sway, independent of amplitude,
+          // so hovering only changes how much it waves — not where it sits
+          p.x += sin(t * 0.5) * 0.02 * freedom;
           return p;
         }
         ` + shader.vertexShader;
@@ -192,13 +191,11 @@ function Banner({ paused }: { paused: boolean }) {
     target += clickBoost.current;
     clickBoost.current = Math.max(0, clickBoost.current - dt * 0.05);
 
-    const smoothing = 1 - Math.exp(-dt * 7);
+    // ease amplitude only — phase advances at a constant rate above, so the
+    // wave never jumps; hover just makes it wave more
+    const smoothing = 1 - Math.exp(-dt * 6);
     uniforms.current.uAmp.value +=
       (target - uniforms.current.uAmp.value) * smoothing;
-    uniforms.current.uSpeed.value =
-      1 +
-      (pointerInside.current ? 0.16 : 0) +
-      Math.min(clickBoost.current * 0.8, 0.24);
   });
 
   return (
