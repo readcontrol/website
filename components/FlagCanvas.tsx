@@ -5,10 +5,12 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, Lightformer, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 
+// cloth plane size (world units) — kept in sync with the shader's H constant
+const PLANE_W = 2.9;
+const PLANE_H = 4.9;
+
 /* ----------------------------------------------------------------
    Cream cloth texture with subtle woven detail + swallowtail mask.
-   Tinted to the Read Control bookmark cream instead of gray so the
-   hero stays on-brand while reading as real fabric.
    ---------------------------------------------------------------- */
 function useClothTextures() {
   return useMemo(() => {
@@ -16,7 +18,6 @@ function useClothTextures() {
     const h = 1024;
     const notch = 130;
 
-    // --- color / alpha map (the swallowtail silhouette lives in alpha) ---
     const canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
@@ -32,11 +33,9 @@ function useClothTextures() {
     ctx.closePath();
     ctx.clip();
 
-    // base cream
     ctx.fillStyle = "#e7e0cf";
     ctx.fillRect(0, 0, w, h);
 
-    // subtle woven fabric grain
     const img = ctx.getImageData(0, 0, w, h);
     const d = img.data;
     for (let y = 0; y < h; y++) {
@@ -53,7 +52,6 @@ function useClothTextures() {
     }
     ctx.putImageData(img, 0, 0);
 
-    // soft edge darkening for depth
     const vg = ctx.createLinearGradient(0, 0, w, 0);
     vg.addColorStop(0, "rgba(0,0,0,0.12)");
     vg.addColorStop(0.12, "rgba(0,0,0,0)");
@@ -67,7 +65,6 @@ function useClothTextures() {
     map.anisotropy = 8;
     map.colorSpace = THREE.SRGBColorSpace;
 
-    // --- roughness map: break up highlights like real cloth ---
     const rc = document.createElement("canvas");
     rc.width = w;
     rc.height = h;
@@ -90,24 +87,34 @@ function useClothTextures() {
 }
 
 /* ----------------------------------------------------------------
-   Waving cloth: PBR material with wave displacement injected into
-   the vertex stage; normals recomputed for correct lighting.
+   Waving cloth. Two effects live in the vertex shader:
+     • uReveal  — an "unroll": the cloth starts wound into a roll at
+       the top and unfurls downward on first render.
+     • wave     — a traveling wave (pinned at top, free at bottom),
+       whose amplitude (uAmp) rises on hover / click.
+   Normals are recomputed by finite differences so lighting stays
+   correct through both the roll and the wave.
    ---------------------------------------------------------------- */
 function Banner({ paused }: { paused: boolean }) {
   const { map, roughnessMap } = useClothTextures();
-  const idleAmplitude = 0.075;
+
+  const idleAmplitude = 0.14; // waves a bit more than before
+  const hoverExtra = 0.17; // sustained extra wave while hovering
+  const revealDuration = 1.7; // seconds for the unroll intro
+
   const uniforms = useRef({
     uTime: { value: 0 },
     uAmp: { value: idleAmplitude },
     uSpeed: { value: 1 },
+    uReveal: { value: paused ? 1 : 0 },
   });
+  const revealT = useRef(0);
   const gustActive = useRef(false);
   const gustElapsed = useRef(0);
   const clickBoost = useRef(0);
   const pointerInside = useRef(false);
 
   const startGust = () => {
-    if (pointerInside.current) return;
     pointerInside.current = true;
     gustActive.current = true;
     gustElapsed.current = 0;
@@ -132,37 +139,58 @@ function Banner({ paused }: { paused: boolean }) {
       shader.uniforms.uTime = uniforms.current.uTime;
       shader.uniforms.uAmp = uniforms.current.uAmp;
       shader.uniforms.uSpeed = uniforms.current.uSpeed;
+      shader.uniforms.uReveal = uniforms.current.uReveal;
 
       shader.vertexShader =
         `
         uniform float uTime;
         uniform float uAmp;
         uniform float uSpeed;
+        uniform float uReveal;
 
-        vec3 wavePos(vec3 p, vec2 uvv) {
+        const float H = ${PLANE_H.toFixed(3)};   // plane height (world)
+        const float ROLL_R = 0.17;               // roll radius
+
+        vec3 clothPos(vec3 p, vec2 uvv) {
           float t = uTime * uSpeed;
           float freedom = pow(1.0 - uvv.y, 1.3);
+
+          // traveling wave (uvv.y = 1 at the pinned top, 0 at the free bottom)
           float w1 = sin(uvv.y * 2.6 + uvv.x * 1.2 - t * 1.4);
           float w2 = sin(uvv.y * 1.4 - t * 0.9);
           float wave = (w1 * 0.62 + w2 * 0.38) * uAmp * freedom;
-          p.z += wave;
-          p.x += sin(t * 0.5) * uAmp * 0.035 * freedom;
+
+          float frontUv = 1.0 - uReveal;   // uv.y of the unroll front
+
+          if (uvv.y >= frontUv) {
+            // revealed: hangs normally and waves
+            p.z += wave;
+            p.x += sin(t * 0.5) * uAmp * 0.035 * freedom;
+            return p;
+          }
+
+          // not yet revealed: wound around a roll at the front line
+          float yFront = (frontUv - 0.5) * H;
+          float s = (frontUv - uvv.y) * H;      // arc length past the front
+          float theta = s / ROLL_R;
+          p.y = yFront - ROLL_R * sin(theta);
+          p.z = -ROLL_R * (1.0 - cos(theta));
           return p;
         }
         ` + shader.vertexShader;
 
       shader.vertexShader = shader.vertexShader.replace(
         "#include <begin_vertex>",
-        `vec3 transformed = wavePos(position, uv);`,
+        `vec3 transformed = clothPos(position, uv);`,
       );
 
       shader.vertexShader = shader.vertexShader.replace(
         "#include <beginnormal_vertex>",
         `
         float e = 0.01;
-        vec3 pC = wavePos(position, uv);
-        vec3 pX = wavePos(position + vec3(e, 0.0, 0.0), uv + vec2(e * 0.385, 0.0));
-        vec3 pY = wavePos(position + vec3(0.0, e, 0.0), uv + vec2(0.0, e * 0.238));
+        vec3 pC = clothPos(position, uv);
+        vec3 pX = clothPos(position + vec3(e, 0.0, 0.0), uv + vec2(e * 0.345, 0.0));
+        vec3 pY = clothPos(position + vec3(0.0, e, 0.0), uv + vec2(0.0, e * 0.204));
         vec3 objectNormal = normalize(cross(pX - pC, pY - pC));
         `,
       );
@@ -173,54 +201,50 @@ function Banner({ paused }: { paused: boolean }) {
 
   useFrame((_, delta) => {
     if (paused) return;
-    // clamp delta so a backgrounded tab doesn't jump the sim
     const dt = Math.min(delta, 0.05);
     uniforms.current.uTime.value += dt;
 
-    let targetAmplitude = idleAmplitude;
+    // --- unroll intro (ease-out cubic) ---
+    if (revealT.current < revealDuration) {
+      revealT.current = Math.min(revealDuration, revealT.current + dt);
+      const x = revealT.current / revealDuration;
+      uniforms.current.uReveal.value = 1 - Math.pow(1 - x, 3);
+    }
+
+    // --- amplitude: idle + sustained hover + entry gust + click ---
+    let target = idleAmplitude;
+    if (pointerInside.current) target += hoverExtra;
+
     if (gustActive.current) {
       gustElapsed.current += dt;
-      const rise = Math.min(gustElapsed.current / 0.18, 1);
-      const decay = Math.exp(-2.2 * Math.max(0, gustElapsed.current - 0.18));
-      targetAmplitude += 0.22 * rise * decay;
+      const rise = Math.min(gustElapsed.current / 0.16, 1);
+      const decay = Math.exp(-2.0 * Math.max(0, gustElapsed.current - 0.16));
+      target += 0.24 * rise * decay;
       if (gustElapsed.current >= 2) gustActive.current = false;
     }
 
-    targetAmplitude += clickBoost.current;
-    clickBoost.current = Math.max(0, clickBoost.current - dt * 0.045);
+    target += clickBoost.current;
+    clickBoost.current = Math.max(0, clickBoost.current - dt * 0.05);
 
     const smoothing = 1 - Math.exp(-dt * 7);
     uniforms.current.uAmp.value +=
-      (targetAmplitude - uniforms.current.uAmp.value) * smoothing;
-    uniforms.current.uSpeed.value = 1 + Math.min(clickBoost.current * 0.8, 0.24);
+      (target - uniforms.current.uAmp.value) * smoothing;
+    uniforms.current.uSpeed.value =
+      1 +
+      (pointerInside.current ? 0.16 : 0) +
+      Math.min(clickBoost.current * 0.8, 0.24);
   });
 
   return (
-    <group rotation={[0, -0.35, 0.04]} position={[0.4, 0, 0]}>
-      {/* wooden dowel the banner hangs from */}
-      <group position={[0, 2.2, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <mesh>
-          <cylinderGeometry args={[0.05, 0.05, 3.1, 32]} />
-          <meshStandardMaterial color="#8a6234" roughness={0.75} metalness={0} />
-        </mesh>
-        <mesh position={[0, 1.58, 0]}>
-          <sphereGeometry args={[0.085, 32, 32]} />
-          <meshStandardMaterial color="#734f28" roughness={0.65} metalness={0} />
-        </mesh>
-        <mesh position={[0, -1.58, 0]}>
-          <sphereGeometry args={[0.085, 32, 32]} />
-          <meshStandardMaterial color="#734f28" roughness={0.65} metalness={0} />
-        </mesh>
-      </group>
-
-      {/* the waving cloth */}
-      <mesh position={[0, 0, 0]} material={material}>
-        <planeGeometry args={[2.6, 4.2, 120, 180]} />
+    <group rotation={[0, -0.3, 0.03]} position={[0.15, 0.15, 0]}>
+      {/* the waving cloth (no dowel) */}
+      <mesh material={material}>
+        <planeGeometry args={[PLANE_W, PLANE_H, 150, 220]} />
       </mesh>
 
       {/* fixed hit area so the moving cloth can't retrigger hover */}
       <mesh
-        position={[0, 0, 0.45]}
+        position={[0, 0, 0.6]}
         onPointerEnter={(e) => {
           e.stopPropagation();
           startGust();
@@ -233,10 +257,10 @@ function Banner({ paused }: { paused: boolean }) {
         }}
         onClick={(e) => {
           e.stopPropagation();
-          clickBoost.current = Math.min(clickBoost.current + 0.065, 0.3);
+          clickBoost.current = Math.min(clickBoost.current + 0.07, 0.32);
         }}
       >
-        <planeGeometry args={[2.7, 4.3]} />
+        <planeGeometry args={[PLANE_W + 0.3, PLANE_H + 0.3]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
     </group>
@@ -246,24 +270,21 @@ function Banner({ paused }: { paused: boolean }) {
 export default function FlagCanvas({ paused = false }: { paused?: boolean }) {
   return (
     <Canvas
-      camera={{ position: [0.3, 0.4, 7], fov: 42 }}
+      camera={{ position: [0.2, 0.25, 6.1], fov: 42 }}
       dpr={[1, 2]}
       frameloop={paused ? "demand" : "always"}
       gl={{
         antialias: true,
-        alpha: true, // transparent — blends into the page background
+        alpha: true,
         toneMapping: THREE.ACESFilmicToneMapping,
         toneMappingExposure: 1.05,
       }}
       style={{ width: "100%", height: "100%" }}
     >
-      {/* fog color matches the page so banner edges fade into it */}
       <fog attach="fog" args={["#0d0d0f", 9, 18]} />
 
       <ambientLight intensity={0.65} />
-      {/* warm key */}
       <directionalLight position={[4, 5, 5]} intensity={1.4} color="#fff0d4" />
-      {/* cool rim for separation */}
       <spotLight
         position={[-5, 3, -4]}
         angle={0.5}
@@ -271,11 +292,9 @@ export default function FlagCanvas({ paused = false }: { paused?: boolean }) {
         intensity={22}
         color="#8ba6ff"
       />
-      {/* soft fills to lift the wave troughs */}
       <pointLight position={[-2, -1, 4]} intensity={9} color="#ffffff" />
       <pointLight position={[2, 1, 5]} intensity={5} color="#ffffff" />
 
-      {/* procedural environment (no external HDR/CDN — works offline & static) */}
       <Environment resolution={256} frames={1}>
         <Lightformer
           intensity={1.2}
@@ -300,9 +319,9 @@ export default function FlagCanvas({ paused = false }: { paused?: boolean }) {
       <Banner paused={paused} />
 
       <ContactShadows
-        position={[0, -2.4, 0]}
-        opacity={0.32}
-        scale={10}
+        position={[0, -2.7, 0]}
+        opacity={0.28}
+        scale={11}
         blur={2.8}
         far={4.5}
         color="#000000"

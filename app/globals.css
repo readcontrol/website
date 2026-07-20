@@ -212,7 +212,8 @@ p {
 }
 .flag-canvas {
   width: 100%;
-  height: clamp(380px, 46vw, 520px);
+  height: clamp(460px, 60vw, 680px);
+  margin-top: -24px; /* let it reach up toward the top of the hero */
   /* the 3D canvas fills this box; touch pans should not scroll-jack */
   touch-action: pan-y;
 }
