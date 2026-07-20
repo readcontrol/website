@@ -71,7 +71,7 @@ export default function PromoVideo() {
           width: 76px;
           height: 76px;
           border-radius: 999px;
-          background: rgba(236, 230, 216, 0.95);
+          background: rgba(202, 203, 207, 0.95);
           color: #161616;
           padding-left: 4px;
           box-shadow: 0 10px 40px -8px rgba(0, 0, 0, 0.7);
@@ -79,7 +79,7 @@ export default function PromoVideo() {
         }
         button:hover .play-badge {
           transform: scale(1.06);
-          background: #fff;
+          background: #e6e7e9;
         }
       `}</style>
     </div>

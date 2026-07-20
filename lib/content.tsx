@@ -6,7 +6,7 @@ export function Bookmark({ size = 22 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4.2L5 21V4.5a1 1 0 0 1 1-1Z"
-        fill="#ece6d8"
+        fill="currentColor"
       />
     </svg>
   );

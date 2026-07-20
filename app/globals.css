@@ -1,9 +1,8 @@
 /* ============================================================
    Read Control — landing page
    Palette sampled from layout.png: near-black charcoal surfaces,
-   cream/off-white text, thin low-contrast borders. No color accent
-   (the app UI is deliberately monochrome); the warm cream bookmark
-   is the only "brand" color.
+   cream/off-white text, thin low-contrast borders. Fully monochrome —
+   no color accent; the gray bookmark flag is the hero motif.
    ============================================================ */
 
 :root {
@@ -18,8 +17,8 @@
   --text-secondary: #9a9a9e; /* muted metadata */
   --text-tertiary: #6c6c70; /* faint hints */
 
-  --cream: #ece6d8; /* the bookmark flag */
-  --cream-dim: #c9c4b6;
+  --cream: #cacbcf; /* light gray — buttons, favicon, flag family */
+  --cream-dim: #9b9ca1; /* mid gray — icon accents */
 
   --radius-sm: 8px;
   --radius: 14px;
@@ -58,7 +57,7 @@ body {
   /* subtle vignette so the near-black page has depth */
   background-image: radial-gradient(
     120% 80% at 50% -10%,
-    rgba(236, 230, 216, 0.05),
+    rgba(202, 203, 207, 0.05),
     transparent 60%
   );
   background-attachment: fixed;
@@ -123,7 +122,7 @@ p {
   color: #1a1a1a;
 }
 .btn-primary:hover {
-  background: #fff;
+  background: #e6e7e9;
 }
 .btn-ghost {
   background: transparent;
