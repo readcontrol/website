@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-/** Static cream bookmark — shown while the 3D scene loads and as a fallback. */
+/** Static gray bookmark — shown while the 3D scene loads and as a fallback. */
 function FlagFallback() {
   return (
     <svg
@@ -15,7 +15,7 @@ function FlagFallback() {
     >
       <path
         d="M0 0h150v236l-75-46-75 46V0Z"
-        fill="#e7e0cf"
+        fill="#c4c5c9"
       />
     </svg>
   );

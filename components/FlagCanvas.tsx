@@ -10,7 +10,7 @@ const PLANE_W = 2.9;
 const PLANE_H = 5.0;
 
 /* ----------------------------------------------------------------
-   Cream cloth texture with subtle woven detail + swallowtail mask.
+   Light-gray cloth texture with subtle woven detail + swallowtail mask.
    ---------------------------------------------------------------- */
 function useClothTextures() {
   return useMemo(() => {
@@ -33,7 +33,7 @@ function useClothTextures() {
     ctx.closePath();
     ctx.clip();
 
-    ctx.fillStyle = "#e7e0cf";
+    ctx.fillStyle = "#c4c5c9"; // neutral light gray
     ctx.fillRect(0, 0, w, h);
 
     const img = ctx.getImageData(0, 0, w, h);
@@ -246,7 +246,8 @@ export default function FlagCanvas({ paused = false }: { paused?: boolean }) {
       <fog attach="fog" args={["#0d0d0f", 9, 18]} />
 
       <ambientLight intensity={0.65} />
-      <directionalLight position={[4, 5, 5]} intensity={1.4} color="#fff0d4" />
+      {/* near-neutral key so the gray cloth stays gray */}
+      <directionalLight position={[4, 5, 5]} intensity={1.4} color="#f6f5f2" />
       <spotLight
         position={[-5, 3, -4]}
         angle={0.5}
