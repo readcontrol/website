@@ -10,48 +10,96 @@ const PLANE_W = 2.9;
 const PLANE_H = 5.0;
 
 /* ----------------------------------------------------------------
-   Light-gray cloth texture with subtle woven detail + swallowtail mask.
+   Procedural woven-cloth textures.
+
+   A plain-weave height field (interlaced warp/weft threads) drives three
+   maps so the fabric reads as real cloth:
+     • albedo     — gray shaded by the weave (crowns lit, valleys darker)
+     • normalMap  — micro-bump so light catches each thread as it waves
+     • roughness  — thread crowns a touch shinier than the valleys
+   The swallowtail silhouette lives in the albedo's alpha (alphaTest cuts it).
    ---------------------------------------------------------------- */
 function useClothTextures() {
   return useMemo(() => {
     const w = 512;
     const h = 1024;
     const notch = 130;
+    const P = 4.5; // thread pitch in px (warp = vertical, weft = horizontal)
 
+    // deterministic per-thread jitter so threads vary but the result is stable
+    const hash = (n: number) => {
+      const s = Math.sin(n) * 43758.5453;
+      return s - Math.floor(s);
+    };
+
+    // --- 1. weave height field --------------------------------------------
+    const H = new Float32Array(w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const cx = x / P;
+        const cy = y / P;
+        const ix = Math.floor(cx);
+        const iy = Math.floor(cy);
+        // rounded thread cross-sections
+        const warp = Math.sin(Math.PI * (cx - ix));
+        const weft = Math.sin(Math.PI * (cy - iy));
+        // plain weave: alternate which thread rides on top
+        const overWarp = ((ix + iy) & 1) === 0;
+        let hgt = overWarp ? warp * 0.92 + weft * 0.3 : weft * 0.92 + warp * 0.3;
+        // subtle per-thread thickness variation + fibre fuzz
+        hgt += (overWarp ? hash(ix * 1.7) : hash(iy * 1.3 + 9.1)) * 0.08 - 0.04;
+        hgt += (Math.random() - 0.5) * 0.09;
+        H[y * w + x] = hgt;
+      }
+    }
+
+    // helper: draw the swallowtail path (used for masking / clipping)
+    const swallowtail = (c: CanvasRenderingContext2D) => {
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.lineTo(w, 0);
+      c.lineTo(w, h);
+      c.lineTo(w / 2, h - notch);
+      c.lineTo(0, h);
+      c.closePath();
+    };
+
+    // --- 2. albedo (with swallowtail alpha) -------------------------------
     const canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d")!;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(w, 0);
-    ctx.lineTo(w, h);
-    ctx.lineTo(w / 2, h - notch);
-    ctx.lineTo(0, h);
-    ctx.closePath();
-    ctx.clip();
-
-    ctx.fillStyle = "#c4c5c9"; // neutral light gray
-    ctx.fillRect(0, 0, w, h);
-
-    const img = ctx.getImageData(0, 0, w, h);
+    const img = ctx.createImageData(w, h);
     const d = img.data;
+    const base = [196, 197, 201];
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
-        const i = (y * w + x) * 4;
-        const weave =
-          Math.sin(x * 0.9) * 3 +
-          Math.sin(y * 0.9) * 3 +
-          (Math.random() - 0.5) * 9;
-        d[i] += weave;
-        d[i + 1] += weave;
-        d[i + 2] += weave;
+        const i = y * w + x;
+        const hgt = H[i];
+        // crowns brighter, valleys (weave lines) darker
+        let shade = 0.8 + hgt * 0.3;
+        // gentle large-scale mottle for a lived-in fabric feel
+        shade +=
+          Math.sin(x * 0.012 + y * 0.006) * 0.02 +
+          Math.sin(x * 0.03 - y * 0.017) * 0.015;
+        const o = i * 4;
+        d[o] = Math.max(0, Math.min(255, base[0] * shade));
+        d[o + 1] = Math.max(0, Math.min(255, base[1] * shade));
+        d[o + 2] = Math.max(0, Math.min(255, base[2] * shade));
+        d[o + 3] = 255;
       }
     }
     ctx.putImageData(img, 0, 0);
-
+    // keep only the swallowtail shape
+    ctx.globalCompositeOperation = "destination-in";
+    swallowtail(ctx);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    // soft edge darkening, clipped to the shape
+    ctx.save();
+    swallowtail(ctx);
+    ctx.clip();
     const vg = ctx.createLinearGradient(0, 0, w, 0);
     vg.addColorStop(0, "rgba(0,0,0,0.12)");
     vg.addColorStop(0.12, "rgba(0,0,0,0)");
@@ -65,24 +113,60 @@ function useClothTextures() {
     map.anisotropy = 8;
     map.colorSpace = THREE.SRGBColorSpace;
 
+    // --- 3. normal map (from the height gradient) -------------------------
+    const nc = document.createElement("canvas");
+    nc.width = w;
+    nc.height = h;
+    const nctx = nc.getContext("2d")!;
+    const nimg = nctx.createImageData(w, h);
+    const nd = nimg.data;
+    const strength = 2.4;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const xm = (x - 1 + w) % w;
+        const xp = (x + 1) % w;
+        const ym = (y - 1 + h) % h;
+        const yp = (y + 1) % h;
+        const dx = (H[y * w + xm] - H[y * w + xp]) * strength;
+        const dy = (H[ym * w + x] - H[yp * w + x]) * strength;
+        const len = Math.hypot(dx, dy, 1);
+        const o = (y * w + x) * 4;
+        nd[o] = ((dx / len) * 0.5 + 0.5) * 255;
+        nd[o + 1] = ((dy / len) * 0.5 + 0.5) * 255;
+        nd[o + 2] = (1 / len) * 0.5 * 255 + 127.5;
+        nd[o + 3] = 255;
+      }
+    }
+    nctx.putImageData(nimg, 0, 0);
+    const normalMap = new THREE.CanvasTexture(nc);
+    normalMap.colorSpace = THREE.NoColorSpace; // linear data, not sRGB
+    normalMap.anisotropy = 8;
+
+    // --- 4. roughness (crowns a touch shinier) ----------------------------
     const rc = document.createElement("canvas");
     rc.width = w;
     rc.height = h;
     const rctx = rc.getContext("2d")!;
-    rctx.fillStyle = "#c8c8c8";
-    rctx.fillRect(0, 0, w, h);
-    const rimg = rctx.getImageData(0, 0, w, h);
+    const rimg = rctx.createImageData(w, h);
     const rd = rimg.data;
-    for (let i = 0; i < rd.length; i += 4) {
-      const n = (Math.random() - 0.5) * 40;
-      rd[i] += n;
-      rd[i + 1] += n;
-      rd[i + 2] += n;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        // higher threads catch a little more light (lower roughness)
+        const v = Math.max(
+          0,
+          Math.min(255, 214 - H[i] * 46 + (Math.random() - 0.5) * 20),
+        );
+        const o = i * 4;
+        rd[o] = rd[o + 1] = rd[o + 2] = v;
+        rd[o + 3] = 255;
+      }
     }
     rctx.putImageData(rimg, 0, 0);
     const roughnessMap = new THREE.CanvasTexture(rc);
+    roughnessMap.colorSpace = THREE.NoColorSpace;
 
-    return { map, roughnessMap };
+    return { map, normalMap, roughnessMap };
   }, []);
 }
 
@@ -93,7 +177,7 @@ function useClothTextures() {
    recomputed by finite differences so lighting stays correct.
    ---------------------------------------------------------------- */
 function Banner({ paused }: { paused: boolean }) {
-  const { map, roughnessMap } = useClothTextures();
+  const { map, normalMap, roughnessMap } = useClothTextures();
 
   const idleAmplitude = 0.28; // waves noticeably at rest
   const hoverExtra = 0.16; // sustained extra wave while hovering
@@ -121,8 +205,10 @@ function Banner({ paused }: { paused: boolean }) {
   const material = useMemo(() => {
     const mat = new THREE.MeshStandardMaterial({
       map,
+      normalMap,
+      normalScale: new THREE.Vector2(0.6, 0.6),
       roughnessMap,
-      roughness: 0.92,
+      roughness: 0.85,
       metalness: 0,
       side: THREE.DoubleSide,
       transparent: true,
@@ -171,7 +257,7 @@ function Banner({ paused }: { paused: boolean }) {
     };
 
     return mat;
-  }, [map, roughnessMap]);
+  }, [map, normalMap, roughnessMap]);
 
   useFrame((_, delta) => {
     if (paused) return;
