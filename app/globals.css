@@ -215,7 +215,7 @@ p {
 /* ---------- Flag hanging from the very top, behind the nav ---------- */
 .flag-top {
   position: absolute;
-  top: -140px; /* sits higher — hangs down from above the top of the page */
+  top: -80px; /* sits higher — hangs down from above the top of the page */
   left: 0;
   right: 0;
   z-index: 1; /* below nav (50) and hero text (3) */
