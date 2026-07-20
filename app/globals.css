@@ -210,6 +210,15 @@ p {
   align-items: center;
   min-height: 340px;
 }
+.flag-canvas {
+  width: 100%;
+  height: clamp(380px, 46vw, 520px);
+  /* the 3D canvas fills this box; touch pans should not scroll-jack */
+  touch-action: pan-y;
+}
+.flag-canvas canvas {
+  display: block;
+}
 
 @media (max-width: 820px) {
   .hero-grid {
