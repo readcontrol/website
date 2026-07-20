@@ -106,6 +106,7 @@ function Banner({ paused }: { paused: boolean }) {
   const gustElapsed = useRef(0);
   const clickBoost = useRef(0);
   const pointerInside = useRef(false);
+  const sweep = useRef<THREE.PointLight>(null);
 
   const startGust = () => {
     pointerInside.current = true;
@@ -176,6 +177,13 @@ function Banner({ paused }: { paused: boolean }) {
     if (paused) return;
     const dt = Math.min(delta, 0.05);
     uniforms.current.uTime.value += dt;
+    const t = uniforms.current.uTime.value;
+
+    // glide a soft light across the front of the cloth
+    if (sweep.current) {
+      sweep.current.position.x = Math.sin(t * 0.42) * 2.6;
+      sweep.current.position.y = 0.7 + Math.sin(t * 0.31) * 0.5;
+    }
 
     let target = idleAmplitude;
     if (pointerInside.current) target += hoverExtra;
@@ -200,6 +208,16 @@ function Banner({ paused }: { paused: boolean }) {
 
   return (
     <group rotation={[0, -0.3, 0.03]} position={[0.15, 0.85, 0]}>
+      {/* soft light gliding across the cloth for a moving sheen */}
+      <pointLight
+        ref={sweep}
+        position={[0, 0.7, 2.4]}
+        intensity={7}
+        distance={10}
+        decay={2}
+        color="#eaf1ff"
+      />
+
       <mesh material={material}>
         <planeGeometry args={[PLANE_W, PLANE_H, 150, 220]} />
       </mesh>

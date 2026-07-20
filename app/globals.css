@@ -244,7 +244,7 @@ p {
   transition: opacity 0.5s ease;
 }
 .flag-fade[data-ready="true"] {
-  opacity: 1;
+  opacity: 0.85; /* a bit translucent so the page reads through the flag */
 }
 @media (prefers-reduced-motion: reduce) {
   .flag-fade {
