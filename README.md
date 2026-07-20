@@ -39,12 +39,14 @@ public/            drop images & the promo video here — see public/README.md
 
 A real 3D cloth banner (`FlagCanvas`) rendered with **three.js /
 react-three-fiber**. A PBR cloth material has a traveling-wave displacement
-injected into its vertex shader (pinned at the top dowel, free at the swallowtail
+injected into its vertex shader (pinned at the top, free at the swallowtail
 bottom) with normals recomputed for correct lighting. Hover to stir up wind;
-click for a gust. The lighting environment is **procedural** (drei
-`Lightformer`s) so nothing is fetched from a CDN — it works offline and in the
-static export. Loaded via `dynamic(..., { ssr: false })`, with a static cream
-bookmark as the loading fallback, and paused under `prefers-reduced-motion`.
+click for a gust. It's positioned as a top-anchored layer (`.flag-top`) that
+sits **behind the nav**, so it reads as hanging from the very top of the page.
+The lighting environment is **procedural** (drei `Lightformer`s) so nothing is
+fetched from a CDN — it works offline and in the static export. Loaded via
+`dynamic(..., { ssr: false })`, with a static cream bookmark as the loading
+fallback, and paused under `prefers-reduced-motion`.
 
 ## Assets
 

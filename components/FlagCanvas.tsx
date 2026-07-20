@@ -5,9 +5,9 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, Lightformer, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 
-// cloth plane size (world units) — kept in sync with the shader's H constant
+// cloth plane size (world units)
 const PLANE_W = 2.9;
-const PLANE_H = 4.9;
+const PLANE_H = 5.0;
 
 /* ----------------------------------------------------------------
    Cream cloth texture with subtle woven detail + swallowtail mask.
@@ -87,28 +87,22 @@ function useClothTextures() {
 }
 
 /* ----------------------------------------------------------------
-   Waving cloth. Two effects live in the vertex shader:
-     • uReveal  — an "unroll": the cloth starts wound into a roll at
-       the top and unfurls downward on first render.
-     • wave     — a traveling wave (pinned at top, free at bottom),
-       whose amplitude (uAmp) rises on hover / click.
-   Normals are recomputed by finite differences so lighting stays
-   correct through both the roll and the wave.
+   Waving cloth: PBR material with a traveling-wave displacement in
+   the vertex shader (pinned at the top, free at the swallowtail
+   bottom). Amplitude (uAmp) rises on hover / click. Normals are
+   recomputed by finite differences so lighting stays correct.
    ---------------------------------------------------------------- */
 function Banner({ paused }: { paused: boolean }) {
   const { map, roughnessMap } = useClothTextures();
 
-  const idleAmplitude = 0.14; // waves a bit more than before
-  const hoverExtra = 0.17; // sustained extra wave while hovering
-  const revealDuration = 1.7; // seconds for the unroll intro
+  const idleAmplitude = 0.2; // waves noticeably
+  const hoverExtra = 0.18; // sustained extra wave while hovering
 
   const uniforms = useRef({
     uTime: { value: 0 },
     uAmp: { value: idleAmplitude },
     uSpeed: { value: 1 },
-    uReveal: { value: paused ? 1 : 0 },
   });
-  const revealT = useRef(0);
   const gustActive = useRef(false);
   const gustElapsed = useRef(0);
   const clickBoost = useRef(0);
@@ -139,42 +133,22 @@ function Banner({ paused }: { paused: boolean }) {
       shader.uniforms.uTime = uniforms.current.uTime;
       shader.uniforms.uAmp = uniforms.current.uAmp;
       shader.uniforms.uSpeed = uniforms.current.uSpeed;
-      shader.uniforms.uReveal = uniforms.current.uReveal;
 
       shader.vertexShader =
         `
         uniform float uTime;
         uniform float uAmp;
         uniform float uSpeed;
-        uniform float uReveal;
-
-        const float H = ${PLANE_H.toFixed(3)};   // plane height (world)
-        const float ROLL_R = 0.17;               // roll radius
 
         vec3 clothPos(vec3 p, vec2 uvv) {
           float t = uTime * uSpeed;
           float freedom = pow(1.0 - uvv.y, 1.3);
-
-          // traveling wave (uvv.y = 1 at the pinned top, 0 at the free bottom)
           float w1 = sin(uvv.y * 2.6 + uvv.x * 1.2 - t * 1.4);
           float w2 = sin(uvv.y * 1.4 - t * 0.9);
-          float wave = (w1 * 0.62 + w2 * 0.38) * uAmp * freedom;
-
-          float frontUv = 1.0 - uReveal;   // uv.y of the unroll front
-
-          if (uvv.y >= frontUv) {
-            // revealed: hangs normally and waves
-            p.z += wave;
-            p.x += sin(t * 0.5) * uAmp * 0.035 * freedom;
-            return p;
-          }
-
-          // not yet revealed: wound around a roll at the front line
-          float yFront = (frontUv - 0.5) * H;
-          float s = (frontUv - uvv.y) * H;      // arc length past the front
-          float theta = s / ROLL_R;
-          p.y = yFront - ROLL_R * sin(theta);
-          p.z = -ROLL_R * (1.0 - cos(theta));
+          float w3 = sin(uvv.x * 2.0 + uvv.y * 3.4 - t * 1.9);
+          float wave = (w1 * 0.55 + w2 * 0.32 + w3 * 0.13) * uAmp * freedom;
+          p.z += wave;
+          p.x += sin(t * 0.5) * uAmp * 0.04 * freedom;
           return p;
         }
         ` + shader.vertexShader;
@@ -190,7 +164,7 @@ function Banner({ paused }: { paused: boolean }) {
         float e = 0.01;
         vec3 pC = clothPos(position, uv);
         vec3 pX = clothPos(position + vec3(e, 0.0, 0.0), uv + vec2(e * 0.345, 0.0));
-        vec3 pY = clothPos(position + vec3(0.0, e, 0.0), uv + vec2(0.0, e * 0.204));
+        vec3 pY = clothPos(position + vec3(0.0, e, 0.0), uv + vec2(0.0, e * 0.2));
         vec3 objectNormal = normalize(cross(pX - pC, pY - pC));
         `,
       );
@@ -204,14 +178,6 @@ function Banner({ paused }: { paused: boolean }) {
     const dt = Math.min(delta, 0.05);
     uniforms.current.uTime.value += dt;
 
-    // --- unroll intro (ease-out cubic) ---
-    if (revealT.current < revealDuration) {
-      revealT.current = Math.min(revealDuration, revealT.current + dt);
-      const x = revealT.current / revealDuration;
-      uniforms.current.uReveal.value = 1 - Math.pow(1 - x, 3);
-    }
-
-    // --- amplitude: idle + sustained hover + entry gust + click ---
     let target = idleAmplitude;
     if (pointerInside.current) target += hoverExtra;
 
@@ -236,8 +202,7 @@ function Banner({ paused }: { paused: boolean }) {
   });
 
   return (
-    <group rotation={[0, -0.3, 0.03]} position={[0.15, 0.15, 0]}>
-      {/* the waving cloth (no dowel) */}
+    <group rotation={[0, -0.3, 0.03]} position={[0.15, 0.35, 0]}>
       <mesh material={material}>
         <planeGeometry args={[PLANE_W, PLANE_H, 150, 220]} />
       </mesh>
@@ -270,7 +235,7 @@ function Banner({ paused }: { paused: boolean }) {
 export default function FlagCanvas({ paused = false }: { paused?: boolean }) {
   return (
     <Canvas
-      camera={{ position: [0.2, 0.25, 6.1], fov: 42 }}
+      camera={{ position: [0.2, 0.4, 6.0], fov: 42 }}
       dpr={[1, 2]}
       frameloop={paused ? "demand" : "always"}
       gl={{
@@ -319,8 +284,8 @@ export default function FlagCanvas({ paused = false }: { paused?: boolean }) {
       <Banner paused={paused} />
 
       <ContactShadows
-        position={[0, -2.7, 0]}
-        opacity={0.28}
+        position={[0, -2.9, 0]}
+        opacity={0.25}
         scale={11}
         blur={2.8}
         far={4.5}

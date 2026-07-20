@@ -171,16 +171,51 @@ p {
   gap: 10px;
 }
 
+/* ---------- Page wrapper (positioning context for the top flag) ---------- */
+.page {
+  position: relative;
+  /* clip stray horizontal overflow without creating a scroll container
+     (so the sticky nav keeps working) */
+  overflow-x: clip;
+}
+
+/* ---------- Flag hanging from the very top, behind the nav ---------- */
+.flag-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1; /* below nav (50) and hero text (3) */
+  height: 720px;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none; /* wrapper never blocks; the canvas re-enables itself */
+}
+.flag-canvas {
+  pointer-events: auto;
+  width: min(600px, 56%);
+  height: 100%;
+  touch-action: pan-y;
+}
+.flag-canvas canvas {
+  display: block;
+}
+
 /* ---------- Hero ---------- */
 .hero {
   position: relative;
   padding: clamp(48px, 9vw, 104px) 0 clamp(40px, 6vw, 72px);
-}
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
+  min-height: 660px;
+  display: flex;
   align-items: center;
-  gap: clamp(24px, 5vw, 64px);
+}
+.hero-copy {
+  position: relative;
+  z-index: 3; /* above the flag, so text/buttons stay interactive */
+  max-width: 30rem;
 }
 .hero h1 {
   font-size: clamp(2.4rem, 6vw, 4rem);
@@ -204,27 +239,22 @@ p {
   font-size: 0.85rem;
   color: var(--text-tertiary);
 }
-.flag-stage {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 340px;
-}
-.flag-canvas {
-  width: 100%;
-  height: clamp(460px, 60vw, 680px);
-  margin-top: -24px; /* let it reach up toward the top of the hero */
-  /* the 3D canvas fills this box; touch pans should not scroll-jack */
-  touch-action: pan-y;
-}
-.flag-canvas canvas {
-  display: block;
-}
-
 @media (max-width: 820px) {
-  .hero-grid {
-    grid-template-columns: 1fr;
+  /* flag drops in from the top; text sits below it */
+  .flag-top {
+    height: 380px;
+    justify-content: center;
+  }
+  .flag-canvas {
+    width: min(320px, 78%);
+  }
+  .hero {
     text-align: center;
+    padding-top: 360px;
+    min-height: 0;
+  }
+  .hero-copy {
+    max-width: none;
   }
   .hero-lede {
     margin-left: auto;
@@ -232,10 +262,6 @@ p {
   }
   .hero-cta {
     justify-content: center;
-  }
-  .flag-stage {
-    order: -1;
-    min-height: 280px;
   }
 }
 

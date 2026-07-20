@@ -14,7 +14,12 @@ const DOWNLOAD = "#download"; // placeholder until a build is published
 
 export default function Home() {
   return (
-    <>
+    <div className="page">
+      {/* the flag hangs from the very top, behind the nav */}
+      <div className="flag-top" aria-hidden={false}>
+        <WavingFlag />
+      </div>
+
       {/* ---------- Nav ---------- */}
       <header className="nav">
         <div className="container nav-inner">
@@ -36,8 +41,8 @@ export default function Home() {
       <main id="top">
         {/* ---------- Hero ---------- */}
         <section className="hero">
-          <div className="container hero-grid">
-            <div>
+          <div className="container">
+            <div className="hero-copy">
               <p className="eyebrow">Local-first · macOS</p>
               <h1>
                 Save the web.
@@ -58,9 +63,6 @@ export default function Home() {
                 </a>
               </div>
               <p className="hero-note">Free · open source · no account needed</p>
-            </div>
-            <div className="flag-stage">
-              <WavingFlag />
             </div>
           </div>
         </section>
@@ -188,6 +190,6 @@ export default function Home() {
           <span>© {new Date().getFullYear()} Rodrigo Boniatti</span>
         </div>
       </footer>
-    </>
+    </div>
   );
 }
