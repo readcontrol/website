@@ -4,24 +4,46 @@
    Read Control — landing page
 
    Palette sampled from layout.png: near-black charcoal surfaces,
-   cream/off-white text, thin low-contrast borders. Fully monochrome —
-   no color accent; the gray bookmark flag is the hero motif.
+   cream/off-white text, thin low-contrast borders. Monochrome apart from
+   the two letter accents; the gray bookmark flag is the hero motif.
+
+   Two themes. Every Tailwind color token points at a runtime `--rc-*`
+   variable, so flipping the theme is a matter of re-declaring those
+   variables — no component knows which theme is on.
+
+   Which theme is on:
+     no data-theme  → follow the reader's system setting
+     data-theme     → the reader picked one, and it wins (stored in
+                      localStorage, re-applied before first paint)
+
+   `cream` keeps its name in both themes: it means "the accent ink", which
+   is a light gray on charcoal and a dark gray on paper.
 
    This file is only a theme. Every rule lives in the markup as a
    utility — there is no components layer and no custom CSS.
    ============================================================ */
 
 @theme {
-  --color-bg: #0d0d0f; /* page / outermost near-black */
-  --color-surface: #161618; /* window surface */
-  --color-surface-2: #1c1c1f; /* elevated cards / panels */
+  --color-bg: var(--rc-bg);
+  --color-surface: var(--rc-surface);
+  --color-surface-2: var(--rc-surface-2);
 
-  --color-fg: #f1f0ee; /* primary cream-white */
-  --color-fg-muted: #9a9a9e; /* muted metadata */
-  --color-fg-subtle: #6c6c70; /* faint hints */
+  --color-fg: var(--rc-fg);
+  --color-fg-muted: var(--rc-fg-muted);
+  --color-fg-subtle: var(--rc-fg-subtle);
 
-  --color-cream: #cacbcf; /* light gray — buttons, favicon, flag family */
-  --color-cream-dim: #9b9ca1; /* mid gray — icon accents */
+  --color-cream: var(--rc-cream);
+  --color-cream-dim: var(--rc-cream-dim);
+
+  /* hairlines: white over charcoal, black over paper */
+  --color-line: var(--rc-line);
+  --color-line-strong: var(--rc-line-strong);
+
+  /* the only two non-grays on the page — both live in the letter, where the
+     words act out what the app does to them. Fixed across themes: the
+     marker is yellow and the heart is red on paper as much as on charcoal. */
+  --color-highlight: #ffe066; /* marker yellow, on hover only */
+  --color-heart: #ff5f57; /* favourite red */
 
   /* the page gutter cap, as max-w-page */
   --container-page: 1080px;
@@ -29,4 +51,120 @@
   --font-sans:
     var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     Roboto, Helvetica, Arial, sans-serif;
+
+  /* the signature at the foot of the letter, and nothing else */
+  --font-hand: var(--font-caveat), ui-rounded, cursive;
+}
+
+/* `dark:` means "the dark theme is showing", by system setting or by choice.
+   It replaces Tailwind's built-in prefers-color-scheme-only variant. */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+  &:where(:root[data-theme="dark"] *) {
+    @slot;
+  }
+}
+
+/* ---------- light: paper ---------- */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --rc-bg: #fbfaf8;
+  --rc-surface: #f4f2ef;
+  --rc-surface-2: #edebe6;
+
+  --rc-fg: #17181a;
+  --rc-fg-muted: #55565a;
+  --rc-fg-subtle: #85868b;
+
+  --rc-cream: #3c3d42;
+  --rc-cream-dim: #6f7075;
+
+  --rc-line: rgb(23 24 26 / 0.12);
+  --rc-line-strong: rgb(23 24 26 / 0.18);
+
+  /* the wash behind the hero */
+  --rc-glow: rgb(23 24 26 / 0.05);
+
+  /* the CTA pill: dark ink on paper */
+  --rc-btn-from: #35363a;
+  --rc-btn-via: #212226;
+  --rc-btn-to: #17181a;
+  --rc-btn-from-hover: #45464a;
+  --rc-btn-via-hover: #2e2f33;
+  --rc-btn-to-hover: #212226;
+  --rc-btn-fg: #f7f6f4;
+  --rc-btn-sheen: rgb(255 255 255 / 0.35);
+  --rc-btn-inset: rgb(255 255 255 / 0.18);
+}
+
+/* ---------- dark: charcoal ----------
+   Declared twice on purpose: once for readers whose system asks for dark and
+   who have not overridden it, once for readers who picked dark outright. A
+   media query and an attribute selector cannot share a rule. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --rc-bg: #0d0d0f;
+    --rc-surface: #161618;
+    --rc-surface-2: #1c1c1f;
+
+    --rc-fg: #f1f0ee;
+    --rc-fg-muted: #9a9a9e;
+    --rc-fg-subtle: #6c6c70;
+
+    --rc-cream: #cacbcf;
+    --rc-cream-dim: #9b9ca1;
+
+    --rc-line: rgb(255 255 255 / 0.1);
+    --rc-line-strong: rgb(255 255 255 / 0.15);
+
+    --rc-glow: rgb(202 203 207 / 0.05);
+
+    --rc-btn-from: #e8e9eb;
+    --rc-btn-via: #cfd0d4;
+    --rc-btn-to: #c1c2c7;
+    --rc-btn-from-hover: #f1f2f4;
+    --rc-btn-via-hover: #d8d9dd;
+    --rc-btn-to-hover: #caccd0;
+    --rc-btn-fg: #17181a;
+    --rc-btn-sheen: rgb(255 255 255 / 0.6);
+    --rc-btn-inset: rgb(255 255 255 / 0.5);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --rc-bg: #0d0d0f;
+  --rc-surface: #161618;
+  --rc-surface-2: #1c1c1f;
+
+  --rc-fg: #f1f0ee;
+  --rc-fg-muted: #9a9a9e;
+  --rc-fg-subtle: #6c6c70;
+
+  --rc-cream: #cacbcf;
+  --rc-cream-dim: #9b9ca1;
+
+  --rc-line: rgb(255 255 255 / 0.1);
+  --rc-line-strong: rgb(255 255 255 / 0.15);
+
+  --rc-glow: rgb(202 203 207 / 0.05);
+
+  --rc-btn-from: #e8e9eb;
+  --rc-btn-via: #cfd0d4;
+  --rc-btn-to: #c1c2c7;
+  --rc-btn-from-hover: #f1f2f4;
+  --rc-btn-via-hover: #d8d9dd;
+  --rc-btn-to-hover: #caccd0;
+  --rc-btn-fg: #17181a;
+  --rc-btn-sheen: rgb(255 255 255 / 0.6);
+  --rc-btn-inset: rgb(255 255 255 / 0.5);
 }

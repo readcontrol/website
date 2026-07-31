@@ -17,7 +17,7 @@ export default function MediaFrame({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border border-white/10 bg-surface-2 shadow-2xl ${ratio}`}
+      className={`relative overflow-hidden rounded-xl border border-line bg-surface-2 shadow-2xl ${ratio}`}
     >
       <span className="absolute inset-0 flex items-center justify-center bg-[repeating-linear-gradient(45deg,var(--color-surface-2)_0_12px,var(--color-surface)_12px_24px)] p-6 text-center text-sm tracking-wide text-fg-subtle">
         {label}

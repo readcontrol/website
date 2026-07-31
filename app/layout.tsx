@@ -1,11 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Caveat, Inter } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
+});
+
+/** The hand the letter is signed in, and nothing else. */
+const caveat = Caveat({
+  subsets: ["latin"],
+  display: "swap",
+  weight: "600",
+  variable: "--font-caveat",
 });
 
 const title = "Read Control — save the web, read it later";
@@ -27,9 +35,24 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0d0d0f",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fbfaf8" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d0d0f" },
+  ],
+  colorScheme: "light dark",
 };
+
+/**
+ * Re-applies a stored theme choice before the page paints, so a reader who
+ * picked the theme that opposes their system setting never sees the other one
+ * flash first. Runs synchronously as the first thing in <body>; anything that
+ * throws (Safari private mode blocking localStorage) just leaves the system
+ * setting in charge.
+ *
+ * The key is spelled out because this runs before any module loads — it is
+ * KEY.theme in lib/persist.ts, and the two have to stay in step.
+ */
+const THEME_SCRIPT = `try{var t=localStorage.getItem("rc-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
 
 export default function RootLayout({
   children,
@@ -39,12 +62,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} motion-safe:scroll-smooth`}
+      className={`${inter.variable} ${caveat.variable} motion-safe:scroll-smooth`}
+      // the theme script rewrites data-theme before React hydrates
+      suppressHydrationWarning
     >
       <body
         className="bg-bg bg-fixed font-sans text-base leading-[1.6] text-fg antialiased [text-rendering:optimizeLegibility]
-          bg-[radial-gradient(120%_80%_at_50%_-10%,rgb(202_203_207_/_0.05),transparent_60%)]"
+          bg-[radial-gradient(120%_80%_at_50%_-10%,var(--rc-glow),transparent_60%)]"
       >
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         {children}
       </body>
     </html>

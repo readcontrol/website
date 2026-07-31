@@ -44,7 +44,7 @@ export default function PromoVideo() {
           />
           <span
             aria-hidden="true"
-            className="relative flex size-19 items-center justify-center rounded-full bg-cream/95 pl-1 text-[#161616] shadow-2xl transition group-hover:scale-105 group-hover:bg-[#e6e7e9]"
+            className="relative flex size-19 items-center justify-center rounded-full bg-cream/95 pl-1 text-bg shadow-2xl transition group-hover:scale-105 group-hover:bg-fg"
           >
             <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
               <path d="M8 5v14l11-7z" />

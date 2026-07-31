@@ -15,18 +15,19 @@ const SIZES = {
 
 const VARIANTS = {
   primary: [
-    "relative isolate overflow-hidden border-white/10 text-[#17181a]",
-    "bg-linear-[177deg] from-[#e8e9eb] via-[#cfd0d4] to-[#c1c2c7]",
-    "hover:from-[#f1f2f4] hover:via-[#d8d9dd] hover:to-[#caccd0]",
-    "shadow-[inset_0_1px_2px_rgb(255_255_255/0.5),inset_0_-1px_3px_rgb(0_0_0/0.1),0_8px_22px_-10px_rgb(0_0_0/0.5)]",
+    // gray pill on charcoal, ink pill on paper — the stops flip with the theme
+    "relative isolate overflow-hidden border-line text-(color:--rc-btn-fg)",
+    "bg-linear-[177deg] from-(--rc-btn-from) via-(--rc-btn-via) to-(--rc-btn-to)",
+    "hover:from-(--rc-btn-from-hover) hover:via-(--rc-btn-via-hover) hover:to-(--rc-btn-to-hover)",
+    "shadow-[inset_0_1px_2px_var(--rc-btn-inset),inset_0_-1px_3px_rgb(0_0_0/0.1),0_8px_22px_-10px_rgb(0_0_0/0.5)]",
     // the reflection: above the fill, below the label
     "before:absolute before:inset-0 before:-z-10 before:-translate-x-[10%]",
     "before:bg-linear-[118deg] before:from-transparent before:from-25%",
-    "before:via-white/60 before:via-40% before:to-transparent before:to-60%",
+    "before:via-(--rc-btn-sheen) before:via-40% before:to-transparent before:to-60%",
     "before:transition-transform before:duration-700 hover:before:translate-x-[35%]",
     "motion-reduce:before:transition-none",
   ].join(" "),
-  ghost: "border-white/15 hover:border-fg-subtle hover:bg-surface-2",
+  ghost: "border-line-strong hover:border-fg-subtle hover:bg-surface-2",
 };
 
 export default function Button({
