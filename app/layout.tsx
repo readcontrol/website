@@ -37,8 +37,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body>{children}</body>
+    <html
+      lang="en"
+      className={`${inter.variable} motion-safe:scroll-smooth`}
+    >
+      <body
+        className="bg-bg bg-fixed font-sans text-base leading-[1.6] text-fg antialiased [text-rendering:optimizeLegibility]
+          bg-[radial-gradient(120%_80%_at_50%_-10%,rgb(202_203_207_/_0.05),transparent_60%)]"
+      >
+        {children}
+      </body>
     </html>
   );
 }

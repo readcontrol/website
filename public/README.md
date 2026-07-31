@@ -4,6 +4,12 @@ The page renders **dashed placeholders** until these files exist. Add a file
 with the exact name/path below and it replaces its placeholder automatically —
 no code change needed.
 
+## Header
+
+| Path | What | Notes |
+|------|------|-------|
+| `images/header.png` | Hero image, directly under the headline | 16:9 (e.g. 1840×1035). Spans up to 920px wide. |
+
 ## Video
 
 | Path | What | Notes |

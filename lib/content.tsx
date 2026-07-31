@@ -1,9 +1,18 @@
 import type { ReactNode } from "react";
 
 /** Small inline icons (stroke, cream-dim) used across the page. */
-export function Bookmark({ size = 22 }: { size?: number }) {
+type IconProps = { size?: number; className?: string };
+
+export function Bookmark({ size = 22, className }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      className={className}
+    >
       <path
         d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4.2L5 21V4.5a1 1 0 0 1 1-1Z"
         fill="currentColor"
@@ -12,9 +21,16 @@ export function Bookmark({ size = 22 }: { size?: number }) {
   );
 }
 
-export function Check({ size = 16 }: { size?: number }) {
+export function Check({ size = 16, className }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      className={className}
+    >
       <path
         d="m5 12.5 4.5 4.5L19 7"
         stroke="currentColor"
@@ -26,6 +42,9 @@ export function Check({ size = 16 }: { size?: number }) {
   );
 }
 
+/** Tailwind aspect-ratio utilities the media frames are allowed to use. */
+export type AspectRatio = "aspect-video" | "aspect-4/3";
+
 /** Zig-zag feature rows. Each has a short lead + a few terse bullets. */
 export type Feature = {
   eyebrow: string;
@@ -33,7 +52,8 @@ export type Feature = {
   lead: string;
   bullets: string[];
   image: string; // /images/...
-  ratio: "ratio-16-9" | "ratio-4-3";
+  /** Tailwind aspect-ratio utility for the media frame. */
+  ratio: AspectRatio;
 };
 
 export const FEATURES: Feature[] = [
@@ -48,7 +68,7 @@ export const FEATURES: Feature[] = [
       "Duplicates detected",
     ],
     image: "/images/save-from-browser.png",
-    ratio: "ratio-4-3",
+    ratio: "aspect-4/3",
   },
   {
     eyebrow: "Own your data",
@@ -61,7 +81,7 @@ export const FEATURES: Feature[] = [
       "Optional HTML snapshot",
     ],
     image: "/images/your-files.png",
-    ratio: "ratio-4-3",
+    ratio: "aspect-4/3",
   },
   {
     eyebrow: "Sync",
@@ -74,7 +94,7 @@ export const FEATURES: Feature[] = [
       "Index rebuilds from files",
     ],
     image: "/images/sync.png",
-    ratio: "ratio-4-3",
+    ratio: "aspect-4/3",
   },
   {
     eyebrow: "Read",
@@ -87,7 +107,7 @@ export const FEATURES: Feature[] = [
       "Tables, code, task lists",
     ],
     image: "/images/native-reader.png",
-    ratio: "ratio-4-3",
+    ratio: "aspect-4/3",
   },
   {
     eyebrow: "Organize",
@@ -100,7 +120,7 @@ export const FEATURES: Feature[] = [
       "Read / archive / favorite",
     ],
     image: "/images/search.png",
-    ratio: "ratio-4-3",
+    ratio: "aspect-4/3",
   },
 ];
 

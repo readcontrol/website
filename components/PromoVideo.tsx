@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 
+import MediaFrame from "@/components/MediaFrame";
+
 /**
  * Self-hosted promo video with a poster facade. The <video> only starts
  * loading/playing after the user clicks play, so the poster image is all that
@@ -20,21 +22,16 @@ export default function PromoVideo() {
   };
 
   return (
-    <div className="media ratio-16-9" data-label="Promo video — video/readcontrol-promo.mp4">
+    <MediaFrame
+      ratio="aspect-video"
+      label="Promo video — video/readcontrol-promo.mp4"
+    >
       {!playing ? (
         <button
           type="button"
           onClick={play}
           aria-label="Play the Read Control promo video"
-          style={{
-            all: "unset",
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-          }}
+          className="group absolute inset-0 flex cursor-pointer items-center justify-center"
         >
           {/* poster (shows through if present; placeholder shows otherwise) */}
           <img
@@ -43,9 +40,12 @@ export default function PromoVideo() {
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
             }}
-            style={{ position: "absolute", inset: 0 }}
+            className="absolute inset-0 size-full object-cover"
           />
-          <span className="play-badge" aria-hidden="true">
+          <span
+            aria-hidden="true"
+            className="relative flex size-19 items-center justify-center rounded-full bg-cream/95 pl-1 text-[#161616] shadow-2xl transition group-hover:scale-105 group-hover:bg-[#e6e7e9]"
+          >
             <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
               <path d="M8 5v14l11-7z" />
             </svg>
@@ -57,31 +57,11 @@ export default function PromoVideo() {
           controls
           playsInline
           poster="/images/video-poster.png"
-          style={{ position: "absolute", inset: 0 }}
+          className="absolute inset-0 size-full"
         >
           <source src="/video/readcontrol-promo.mp4" type="video/mp4" />
         </video>
       )}
-      <style>{`
-        .play-badge {
-          position: relative;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 76px;
-          height: 76px;
-          border-radius: 999px;
-          background: rgba(202, 203, 207, 0.95);
-          color: #161616;
-          padding-left: 4px;
-          box-shadow: 0 10px 40px -8px rgba(0, 0, 0, 0.7);
-          transition: transform 0.16s ease, background 0.16s ease;
-        }
-        button:hover .play-badge {
-          transform: scale(1.06);
-          background: #e6e7e9;
-        }
-      `}</style>
-    </div>
+    </MediaFrame>
   );
 }
