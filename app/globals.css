@@ -74,9 +74,9 @@
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --rc-bg: #fbfaf8;
-  --rc-surface: #f4f2ef;
-  --rc-surface-2: #edebe6;
+  --rc-bg: #fdfcfb;
+  --rc-surface: #f6f5f4;
+  --rc-surface-2: #eeedec;
 
   --rc-fg: #17181a;
   --rc-fg-muted: #55565a;
