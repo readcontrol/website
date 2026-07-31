@@ -34,8 +34,8 @@ export default function Home() {
                   <Apple size={17} />
                   Download for macOS
                 </Button>
-                <Button href="#how" variant="ghost">
-                  See how it works
+                <Button href={GITHUB} variant="ghost">
+                  View on GitHub
                 </Button>
               </div>
               <p className="mt-12 text-sm text-fg-subtle">
@@ -56,19 +56,6 @@ export default function Home() {
 
         {/* ---------- Letter ---------- */}
         <Letter />
-
-        {/* ---------- Final CTA — aligned to the letter's column ---------- */}
-        <section className="pb-20 md:pb-26 lg:pb-32" id="download">
-          <div className="mx-auto flex w-full max-w-[40rem] flex-wrap gap-3 px-6">
-            <Button href={DOWNLOAD}>
-              <Apple size={17} />
-              Download for macOS
-            </Button>
-            <Button href={GITHUB} variant="ghost">
-              View on GitHub
-            </Button>
-          </div>
-        </section>
       </main>
     </div>
   );
