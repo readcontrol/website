@@ -5,7 +5,7 @@ import PromoVideo from "@/components/PromoVideo";
 import { Apple } from "@/lib/content";
 
 const GITHUB =
-  "https://github.com/boniattirodrigo/readcontrol-main?utm_source=readcontrol.app";
+  "https://github.com/readcontrol/root?utm_source=readcontrol.app";
 const DOWNLOAD = "#download"; // placeholder until a build is published
 
 /** Centred page gutter, shared by every section. */

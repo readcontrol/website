@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
  */
 
 const GITHUB =
-  "https://github.com/boniattirodrigo/readcontrol-main?utm_source=readcontrol.app";
+  "https://github.com/readcontrol/root?utm_source=readcontrol.app";
 
 /** Handed to an AI so a non-developer can have the code audited for them. */
 const REVIEW_PROMPT =
