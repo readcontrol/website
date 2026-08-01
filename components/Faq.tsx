@@ -6,7 +6,8 @@ import type { ReactNode } from "react";
  * open, and the chevron turns over. The column lines up with the letter above.
  */
 
-const GITHUB = "https://github.com/boniattirodrigo/readcontrol-main";
+const GITHUB =
+  "https://github.com/boniattirodrigo/readcontrol-main?utm_source=readcontrol.app";
 
 /** Handed to an AI so a non-developer can have the code audited for them. */
 const REVIEW_PROMPT =
@@ -17,8 +18,8 @@ const REVIEW_PROMPT =
 
 /** Chat links that open with the review prompt already typed in. */
 const REVIEW_WITH = {
-  chatgpt: `https://chatgpt.com/?q=${encodeURIComponent(REVIEW_PROMPT)}`,
-  claude: `https://claude.ai/new?q=${encodeURIComponent(REVIEW_PROMPT)}`,
+  chatgpt: `https://chatgpt.com/?q=${encodeURIComponent(REVIEW_PROMPT)}&utm_source=readcontrol.app`,
+  claude: `https://claude.ai/new?q=${encodeURIComponent(REVIEW_PROMPT)}&utm_source=readcontrol.app`,
 };
 
 /** A link that matches the letter's understated underline-on-hover style. */
@@ -48,21 +49,14 @@ const QUESTIONS: { q: string; a: ReactNode }[] = [
   },
   {
     q: "Which macOS versions are supported?",
-    a: (
-      // TODO: confirm the minimum macOS version and replace the bracket below.
-      <>
-        Read Control is a native macOS app. [Add the minimum supported version
-        here — e.g. macOS 13 Ventura or later.]
-      </>
-    ),
+    a: <>Read Control requires macOS 14 Sonoma or later.</>,
   },
   {
     q: "Which browsers does the extension support?",
     a: (
-      // TODO: confirm the supported browsers and replace the bracket below.
       <>
-        Saving pages is done through a browser extension. [List the supported
-        browsers here — e.g. Chrome, Edge, Firefox, and Safari.]
+        The browser extension works on Chrome 120+, Edge 120+, and Firefox
+        115+. Safari is not supported yet.
       </>
     ),
   },
@@ -89,6 +83,14 @@ const QUESTIONS: { q: string; a: ReactNode }[] = [
         Not yet. Read Control&apos;s engine is written in Rust, so we can reuse a
         good chunk of the logic and build other UIs on top for different
         operating systems.
+      </>
+    ),
+  },
+  {
+    q: "I found a bug, where do I report?",
+    a: (
+      <>
+        DM <Link href="https://x.com/boniattirodrigo?utm_source=readcontrol.app">@boniattirodrigo</Link> on X.
       </>
     ),
   },
