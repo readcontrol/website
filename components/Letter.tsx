@@ -58,8 +58,8 @@ function Typeface({ children }: { children: ReactNode }) {
 export default function Letter() {
   return (
     <section
-      // the letter ends the page, so its foot carries the page's own margin
-      className="pt-8 pb-20 md:pt-12 md:pb-26 lg:pt-14 lg:pb-32"
+      // the FAQ now ends the page; the letter just needs a gap before it
+      className="pt-8 pb-8 md:pt-12 md:pb-12 lg:pt-14 lg:pb-14"
       id="letter"
     >
       <div className="mx-auto w-full max-w-[40rem] px-6">

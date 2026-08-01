@@ -1,4 +1,5 @@
 import Button from "@/components/Button";
+import Faq from "@/components/Faq";
 import Letter from "@/components/Letter";
 import PromoVideo from "@/components/PromoVideo";
 import { Apple } from "@/lib/content";
@@ -56,6 +57,9 @@ export default function Home() {
 
         {/* ---------- Letter ---------- */}
         <Letter />
+
+        {/* ---------- FAQ ---------- */}
+        <Faq />
       </main>
     </div>
   );
