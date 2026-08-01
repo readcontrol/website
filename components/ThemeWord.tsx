@@ -8,9 +8,9 @@ import { KEY, read, write } from "@/lib/persist";
  * The word in the letter that names the theme you are *not* in — "dark theme"
  * while you are on paper, "light theme" while you are on charcoal.
  *
- * Hovering it swaps the whole page to that theme so you can see it; leaving
- * puts it back. Clicking keeps it, and the word flips to name the way back.
- * The choice is stored, and `layout.tsx` re-applies it before first paint.
+ * Clicking it swaps the whole page to that theme and keeps it, and the word
+ * flips to name the way back. The choice is stored, and `layout.tsx`
+ * re-applies it before first paint.
  */
 
 type Theme = "light" | "dark";
@@ -29,16 +29,9 @@ function stored(): Theme | null {
   return v === "light" || v === "dark" ? v : null;
 }
 
-/** Paint a theme without committing to it. */
+/** Paint a theme on the page. */
 function show(theme: Theme) {
   document.documentElement.dataset.theme = theme;
-}
-
-/** Drop the preview: back to the stored choice, or to the system setting. */
-function unshow() {
-  const pick = stored();
-  if (pick) document.documentElement.dataset.theme = pick;
-  else delete document.documentElement.dataset.theme;
 }
 
 function Sun() {
@@ -101,10 +94,6 @@ export default function ThemeWord() {
   return (
     <button
       type="button"
-      onMouseEnter={() => show(target)}
-      onMouseLeave={unshow}
-      onFocus={() => show(target)}
-      onBlur={unshow}
       onClick={keep}
       aria-label={`Switch to the ${target} theme`}
       className="mx-[0.05em] inline-flex cursor-pointer items-baseline gap-[0.3em] rounded-md border border-line-strong bg-surface-2 px-[0.45em] py-[0.05em] align-baseline transition duration-300 hover:border-fg-subtle hover:bg-surface motion-reduce:transition-none"

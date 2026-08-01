@@ -16,6 +16,7 @@ export const KEY = {
   tag: "rc-letter-tag",
   favorite: "rc-letter-favorite",
   rating: "rc-letter-rating",
+  filter: "rc-letter-filter",
 } as const;
 
 export function read(key: string): string | null {

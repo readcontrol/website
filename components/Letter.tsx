@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import FavoriteWord from "@/components/FavoriteWord";
+import FilterWord from "@/components/FilterWord";
 import RatingStars from "@/components/RatingStars";
 import TagInput from "@/components/TagInput";
 import ThemeWord from "@/components/ThemeWord";
@@ -25,29 +26,6 @@ function Highlight({ children }: { children: ReactNode }) {
   return (
     <span className="rounded-[0.2em] bg-fg/15 px-[0.25em] py-[0.06em] text-fg transition-colors duration-300 hover:bg-highlight hover:text-[#17181a] motion-reduce:transition-none">
       {children}
-    </span>
-  );
-}
-
-/** A filter pill with its little chevron. */
-function Filter({ children }: { children: ReactNode }) {
-  return (
-    <span className="mx-[0.05em] inline-flex items-baseline gap-[0.3em] rounded-md border border-line-strong bg-surface-2 px-[0.45em] py-[0.05em] transition duration-300 hover:border-fg-subtle hover:bg-surface motion-reduce:transition-none">
-      {children}
-      <svg
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-        className="h-[0.5em] w-[0.5em] self-center text-fg-subtle"
-      >
-        <path
-          d="m5 9 7 7 7-7"
-          stroke="currentColor"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-      </svg>
     </span>
   );
 }
@@ -106,12 +84,11 @@ export default function Letter() {
             <Highlight>Highlight</Highlight>, <TagInput />, and{" "}
             <FavoriteWord>favorite</FavoriteWord> your readings, and build a
             library of everything you have ever come across. Then use the{" "}
-            <Filter>filters</Filter> to find the one you want to send to a
-            friend.
+            <FilterWord /> to find the one you want to send to a friend.
           </p>
 
           <p>
-            Every reading is saved on your machine as a{" "}
+            Every page is saved on your machine as a{" "}
             <Mono>reading.md</Mono> file. You own them, and you can move them
             whenever you want. I would keep them in a folder that syncs to the
             cloud too — Dropbox, iCloud, Google Drive, whichever you already
@@ -119,9 +96,11 @@ export default function Letter() {
           </p>
 
           <p>
-            Don&apos;t forget to rate it at the end.
+            Don&apos;t forget to rate them at the end.
             <RatingStars />
           </p>
+
+          <p>Enjoy your readings!</p>
         </div>
 
         <p className="mt-10">
