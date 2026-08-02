@@ -30,7 +30,7 @@ export default function PromoVideo() {
         <button
           type="button"
           onClick={play}
-          aria-label="Play the Read Control promo video"
+          aria-label="Play the ReadControl promo video"
           className="group absolute inset-0 flex cursor-pointer items-center justify-center"
         >
           {/* poster (shows through if present; placeholder shows otherwise) */}

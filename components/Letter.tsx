@@ -69,7 +69,7 @@ export default function Letter() {
 
         <div className="mt-8 space-y-7 text-lg leading-[1.85] text-fg md:text-xl md:leading-[1.8]">
           <p>
-            Read Control lets you manage your readings easily.
+            ReadControl lets you manage your readings easily.
           </p>
 
           <p>

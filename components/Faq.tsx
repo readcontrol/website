@@ -11,7 +11,7 @@ const GITHUB =
 
 /** Handed to an AI so a non-developer can have the code audited for them. */
 const REVIEW_PROMPT =
-  `Please review the source code of Read Control, an open-source macOS app, ` +
+  `Please review the source code of ReadControl, an open-source macOS app, ` +
   `at ${GITHUB}. Is it safe to run? Look for anything that sends my data off ` +
   `my machine, hidden telemetry, unexpected network calls, or otherwise ` +
   `suspicious behaviour, and give me a plain-language verdict.`;
@@ -41,7 +41,7 @@ const QUESTIONS: { q: string; a: ReactNode }[] = [
     q: "How much does the app cost?",
     a: (
       <>
-        Nothing. Read Control is free and open-source — no account, no
+        Nothing. ReadControl is free and open-source — no account, no
         subscription, no trial. You can read every line of it on{" "}
         <Link href={GITHUB}>GitHub</Link>.
       </>
@@ -49,7 +49,7 @@ const QUESTIONS: { q: string; a: ReactNode }[] = [
   },
   {
     q: "Which macOS versions are supported?",
-    a: <>Read Control requires macOS 14 Sonoma or later.</>,
+    a: <>ReadControl requires macOS 14 Sonoma or later.</>,
   },
   {
     q: "Which browsers does the extension support?",
@@ -80,7 +80,7 @@ const QUESTIONS: { q: string; a: ReactNode }[] = [
     q: "Is there a Windows or Linux version?",
     a: (
       <>
-        Not yet. Read Control&apos;s engine is written in Rust, so we can reuse a
+        Not yet. ReadControl&apos;s engine is written in Rust, so we can reuse a
         good chunk of the logic and build other UIs on top for different
         operating systems.
       </>

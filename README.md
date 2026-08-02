@@ -1,6 +1,6 @@
-# Read Control — landing page
+# ReadControl — landing page
 
-Marketing site for **Read Control**, built with **Next.js 16** (App Router) and
+Marketing site for **ReadControl**, built with **Next.js 16** (App Router) and
 plain CSS. Dark theme, palette sampled from the app's `layout.png` (near-black
 charcoal + cream). Statically exported — host it anywhere.
 

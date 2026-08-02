@@ -17,7 +17,7 @@ const caveat = Caveat({
   variable: "--font-caveat",
 });
 
-const title = "Read Control — save the web, read it later";
+const title = "ReadControl — save the web, read it later";
 const description =
   "A local-first read-later app. Save any page from your browser as a Markdown file you own. No accounts, no servers, no telemetry.";
 
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title,
     description,
     url: "https://readcontrol.app",
-    siteName: "Read Control",
+    siteName: "ReadControl",
     type: "website",
   },
   twitter: { card: "summary_large_image", title, description },
