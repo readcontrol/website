@@ -1,34 +1,25 @@
 # Assets to drop in
 
-The page renders **dashed placeholders** until these files exist. Add a file
-with the exact name/path below and it replaces its placeholder automatically —
-no code change needed.
+The page renders **dashed placeholders** until these files exist. Add a file with the exact
+name/path below and it replaces its placeholder automatically — no code change needed.
 
-## Header
+## Feature-row images
 
-| Path | What | Notes |
-|------|------|-------|
-| `images/header.png` | Hero image, directly under the headline | 16:9 (e.g. 1840×1035). Spans up to 920px wide. |
+Shown in rounded cards. **4:3** works best (e.g. 1200×900); app screenshots look great here.
+
+| Path | Feature row |
+|------|-------------|
+| `images/save-from-browser.png` | Save any page in one click |
+| `images/your-files.png` | They are just files |
+| `images/sync.png` | Bring your own sync |
+| `images/native-reader.png` | A native reader |
 
 ## Video
 
 | Path | What | Notes |
 |------|------|-------|
-| `video/readcontrol-promo.mp4` | The promo video | H.264/AAC MP4, 16:9. Only loads after the user clicks play. |
+| `video/readcontrol-promo.mp4` | The promo video | H.264/AAC MP4, 16:9. Loads only after the user clicks play. |
 | `images/video-poster.png` | Video thumbnail | 16:9 (e.g. 1600×900). Shown before play. |
-
-## Feature-row images
-
-Each is shown in a rounded card. **4:3** works best (e.g. 1200×900). App
-screenshots on the charcoal UI look great here.
-
-| Path | Feature row |
-|------|-------------|
-| `images/save-from-browser.png` | Clip any page in one click |
-| `images/your-files.png` | Plain files, forever |
-| `images/sync.png` | Bring your own sync |
-| `images/native-reader.png` | A native reader |
-| `images/search.png` | Find & sort anything |
 
 ## Social / OG image (optional)
 
