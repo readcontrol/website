@@ -73,7 +73,7 @@ export default function Letter() {
           </p>
 
           <p>
-            The extension saves your pages and strips out all the clutter — the{" "}
+            The extension saves your pages and strips out all the clutter, the{" "}
             <Clutter>modals, the banners, the ads</Clutter>. The Mac app lets
             you set the <Typeface>font type and size</Typeface>, so everything
             you read looks the way you want it to. Ah, and it does{" "}
@@ -91,7 +91,7 @@ export default function Letter() {
             Every page is saved on your machine as a{" "}
             <Mono>reading.md</Mono> file. You own them, and you can move them
             whenever you want. I would keep them in a folder that syncs to the
-            cloud too — Dropbox, iCloud, Google Drive, whichever you already
+            cloud too, Dropbox, iCloud, Google Drive, whichever you already
             pay for.
           </p>
 

@@ -13,7 +13,7 @@ const GITHUB =
 const REVIEW_PROMPT =
   `Please review the source code of ReadControl, an open-source macOS app, ` +
   `at ${GITHUB}. Is it safe to run? Look for anything that sends my data off ` +
-  `my machine, hidden telemetry, unexpected network calls, or otherwise ` +
+  `my machine, unexpected network calls, or otherwise ` +
   `suspicious behaviour, and give me a plain-language verdict.`;
 
 /** Chat links that open with the review prompt already typed in. */
@@ -41,7 +41,7 @@ const QUESTIONS: { q: string; a: ReactNode }[] = [
     q: "How much does the app cost?",
     a: (
       <>
-        Nothing. ReadControl is free and open-source — no account, no
+        Nothing. ReadControl is free and open-source, no account, no
         subscription, no trial. You can read every line of it on{" "}
         <Link href={GITHUB}>GitHub</Link>.
       </>
@@ -64,11 +64,11 @@ const QUESTIONS: { q: string; a: ReactNode }[] = [
     q: "How do I know the app is safe to run?",
     a: (
       <>
-        It&apos;s fully open-source, so you — or anyone — can audit exactly what
-        it does on <Link href={GITHUB}>GitHub</Link>. Or have an AI read the code
-        for you:{" "}
-        <Link href={REVIEW_WITH.chatgpt}>review it with ChatGPT</Link> or{" "}
-        <Link href={REVIEW_WITH.claude}>review it with Claude</Link>.
+        It&apos;s fully open-source, so you can audit exactly what it does on{" "}
+        <Link href={GITHUB}>GitHub</Link>. Ask{" "}
+        <Link href={REVIEW_WITH.chatgpt}>ChatGPT</Link> or{" "}
+        <Link href={REVIEW_WITH.claude}>Claude</Link> for a review. Keep in mind
+        this project is still in beta.
       </>
     ),
   },

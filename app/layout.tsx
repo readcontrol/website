@@ -17,22 +17,63 @@ const caveat = Caveat({
   variable: "--font-caveat",
 });
 
-const title = "ReadControl — save the web, read it later";
+const SITE_URL = "https://readcontrol.app";
+const title = "ReadControl: the native macOS reading manager";
 const description =
-  "A local-first read-later app. Save any page from your browser as a Markdown file you own. No accounts, no servers, no telemetry.";
+  "Save any webpage in your computer, read at anytime. No account needed. It’s totally free!";
 
 export const metadata: Metadata = {
-  title,
+  title: {
+    default: title,
+    template: "%s · ReadControl",
+  },
   description,
-  metadataBase: new URL("https://readcontrol.app"),
+  applicationName: "ReadControl",
+  metadataBase: new URL(SITE_URL),
+  keywords: [
+    "ReadControl",
+    "read later",
+    "reading manager",
+    "read-it-later app",
+    "macOS",
+    "local-first",
+    "open source",
+    "Markdown",
+    "save webpages",
+    "offline reading",
+    "browser extension",
+    "no account",
+  ],
+  authors: [{ name: "Rodrigo Boniatti", url: "https://rodrigoboniatti.com" }],
+  creator: "Rodrigo Boniatti",
+  publisher: "ReadControl",
+  category: "productivity",
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
     title,
     description,
-    url: "https://readcontrol.app",
+    url: SITE_URL,
     siteName: "ReadControl",
     type: "website",
+    locale: "en_US",
   },
-  twitter: { card: "summary_large_image", title, description },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    creator: "@boniattirodrigo",
+  },
 };
 
 export const viewport: Viewport = {
@@ -55,6 +96,28 @@ export const viewport: Viewport = {
  */
 const THEME_SCRIPT = `try{var t=localStorage.getItem("rc-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
 
+/**
+ * Structured data for search engines: describes ReadControl as a free macOS
+ * application so it can qualify for rich results. Kept in step with the human
+ * copy above — same name, price, and platform the page itself states.
+ */
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "ReadControl",
+  applicationCategory: "ProductivityApplication",
+  operatingSystem: "macOS 14 Sonoma or later",
+  url: SITE_URL,
+  description,
+  isAccessibleForFree: true,
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  author: {
+    "@type": "Person",
+    name: "Rodrigo Boniatti",
+    url: "https://rodrigoboniatti.com",
+  },
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -72,6 +135,10 @@ export default function RootLayout({
           bg-[radial-gradient(120%_80%_at_50%_-10%,var(--rc-glow),transparent_60%)]"
       >
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+        />
         {children}
         <Analytics />
       </body>
