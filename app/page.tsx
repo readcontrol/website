@@ -29,7 +29,7 @@ export default function Home() {
                 The native macOS reading manager
               </h1>
               <p className="mx-auto mt-8 max-w-lg text-lg text-fg-muted md:text-xl">
-                Save any webpage in your computer, read at anytime. No account needed. It’s totally free!
+                Save any webpage to your computer, read anytime. No account needed. It’s totally free!
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                 <Button href={DOWNLOAD}>

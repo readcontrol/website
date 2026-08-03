@@ -11,7 +11,7 @@ import { ImageResponse } from "next/og";
 // Rendered once at build time — required under `output: export`.
 export const dynamic = "force-static";
 export const alt =
-  "ReadControl: the native macOS reading manager. Save any webpage, read it anytime.";
+  "ReadControl: the native macOS reading manager. Save any webpage to your computer, read anytime.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -84,7 +84,7 @@ export default async function OpengraphImage() {
               marginTop: "28px",
             }}
           >
-            Save any webpage as a Markdown file you own. Read it anytime.
+            Save any webpage to your computer, read anytime.
           </span>
         </div>
 

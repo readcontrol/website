@@ -20,7 +20,7 @@ const caveat = Caveat({
 const SITE_URL = "https://readcontrol.app";
 const title = "ReadControl: the native macOS reading manager";
 const description =
-  "Save any webpage in your computer, read at anytime. No account needed. It’s totally free!";
+  "Save any webpage to your computer, read anytime. No account needed. It’s totally free!";
 
 export const metadata: Metadata = {
   title: {
