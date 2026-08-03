@@ -1,4 +1,4 @@
-# ReadControl — landing page
+# ReadControl's website
 
 ## Develop
 
