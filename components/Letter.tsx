@@ -89,7 +89,7 @@ export default function Letter() {
 
           <p>
             Every page is saved on your machine as a{" "}
-            <Mono>reading.md</Mono> file. You own them, and you can move them
+            <Mono>article.md</Mono> file. You own them, and you can move them
             whenever you want. I would keep them in a folder that syncs to the
             cloud too, Dropbox, iCloud, Google Drive, whichever you already
             pay for.
