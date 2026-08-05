@@ -16,10 +16,9 @@ const REVIEW_PROMPT =
   `my machine, unexpected network calls, or otherwise ` +
   `suspicious behaviour, and give me a plain-language verdict.`;
 
-/** Chat links that open with the review prompt already typed in. */
+/** Chat link that opens with the review prompt already typed in. */
 const REVIEW_WITH = {
-  chatgpt: `https://chatgpt.com/?q=${encodeURIComponent(REVIEW_PROMPT)}&utm_source=readcontrol.app`,
-  claude: `https://claude.ai/new?q=${encodeURIComponent(REVIEW_PROMPT)}&utm_source=readcontrol.app`,
+  claude: `https://claude.ai/new?q=${encodeURIComponent(REVIEW_PROMPT)}`,
 };
 
 /** A link that matches the letter's understated underline-on-hover style. */
@@ -66,7 +65,6 @@ const QUESTIONS: { q: string; a: ReactNode }[] = [
       <>
         It&apos;s fully open-source, so you can audit exactly what it does on{" "}
         <Link href={GITHUB}>GitHub</Link>. Ask{" "}
-        <Link href={REVIEW_WITH.chatgpt}>ChatGPT</Link> or{" "}
         <Link href={REVIEW_WITH.claude}>Claude</Link> for a review. Keep in mind
         this project is still in beta.
       </>
@@ -91,6 +89,16 @@ const QUESTIONS: { q: string; a: ReactNode }[] = [
     a: (
       <>
         DM <Link href="https://x.com/boniattirodrigo?utm_source=readcontrol.app">@boniattirodrigo</Link> on X.
+      </>
+    ),
+  },
+  {
+    q: "Does the app collect any of my data?",
+    a: (
+      <>
+        No. ReadControl doesn&apos;t collect any of your data, no analytics, no
+        accounts, no tracking. Everything you save stays on your Mac. The only
+        network request it makes is checking for a new version.
       </>
     ),
   },
@@ -119,12 +127,12 @@ function Chevron() {
 export default function Faq() {
   return (
     <section className="pb-20 md:pb-26 lg:pb-32" id="faq">
-      <div className="mx-auto w-full max-w-[40rem] px-6 pt-16 md:pt-20 lg:pt-24">
+      <div className="mx-auto w-full max-w-[40rem] px-6 pt-8 md:pt-10 lg:pt-14">
         <p className="text-xs font-semibold tracking-widest text-fg-subtle uppercase">
           Questions
         </p>
 
-        <div className="mt-8">
+        <div className="mt-4">
           {QUESTIONS.map(({ q, a }) => (
             <details
               key={q}

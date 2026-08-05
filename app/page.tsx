@@ -20,7 +20,7 @@ export default function Home() {
     <div className="relative overflow-x-clip">
       <main id="top">
         {/* ---------- Hero ---------- */}
-        <section className="relative pt-12 pb-6 md:pt-18 md:pb-8 lg:pt-26 lg:pb-10">
+        <section className="relative pt-10 pb-6 md:pt-14 md:pb-8 lg:pt-20 lg:pb-10">
           <div
             className={`${CONTAINER} flex flex-col items-center gap-9 text-center md:gap-12 lg:gap-15`}
           >
