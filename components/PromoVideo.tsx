@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 
 import MediaFrame from "@/components/MediaFrame";
 
@@ -9,7 +10,7 @@ import MediaFrame from "@/components/MediaFrame";
  * loading/playing after the user clicks play, so the poster image is all that
  * ships on first paint. Drop the real files in:
  *   public/video/readcontrol-promo.mp4
- *   public/images/video-poster.png   (16:9)
+ *   public/images/demo_thumb.png   (16:9)
  */
 export default function PromoVideo() {
   const [playing, setPlaying] = useState(false);
@@ -34,8 +35,10 @@ export default function PromoVideo() {
           className="group absolute inset-0 flex cursor-pointer items-center justify-center"
         >
           {/* poster (shows through if present; placeholder shows otherwise) */}
-          <img
-            src="/images/video-poster.png"
+          <Image
+            src="/images/demo_thumb.png"
+            width={1600}
+            height={900}
             alt=""
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
@@ -56,10 +59,10 @@ export default function PromoVideo() {
           ref={videoRef}
           controls
           playsInline
-          poster="/images/video-poster.png"
+          poster="/images/demo_thumb.png"
           className="absolute inset-0 size-full"
         >
-          <source src="/video/readcontrol-promo.mp4" type="video/mp4" />
+          <source src="/video/demo.mp4" type="video/mp4" />
         </video>
       )}
     </MediaFrame>
