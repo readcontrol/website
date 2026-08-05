@@ -127,7 +127,7 @@ function Chevron() {
 export default function Faq() {
   return (
     <section className="pb-20 md:pb-26 lg:pb-32" id="faq">
-      <div className="mx-auto w-full max-w-[40rem] px-6 pt-8 md:pt-10 lg:pt-14">
+      <div className="mx-auto w-full max-w-[40rem] px-6 pt-4 md:pt-6 lg:pt-10">
         <p className="text-xs font-semibold tracking-widest text-fg-subtle uppercase">
           Questions
         </p>
