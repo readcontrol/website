@@ -6,7 +6,8 @@ import { Apple } from "@/lib/content";
 
 const GITHUB =
   "https://github.com/readcontrol/root?utm_source=readcontrol.app";
-const DOWNLOAD = "#download"; // placeholder until a build is published
+const DOWNLOAD =
+  "https://github.com/readcontrol/macos/releases/download/v0.1.0/ReadControl-0.1.0.dmg";
 
 /** Centred page gutter, shared by every section. */
 const CONTAINER = "mx-auto w-full max-w-page px-6";
