@@ -9,6 +9,12 @@ import type { ReactNode } from "react";
 const GITHUB =
   "https://github.com/readcontrol/root?utm_source=readcontrol.app";
 
+/** The extension's public store listings. */
+const CHROME_EXTENSION =
+  "https://chromewebstore.google.com/detail/readcontrol/cegehgdbbjjeondepcaejickdmkacbck";
+const FIREFOX_EXTENSION =
+  "https://addons.mozilla.org/en-US/firefox/addon/readcontrol";
+
 /** Handed to an AI so a non-developer can have the code audited for them. */
 const REVIEW_PROMPT =
   `Please review the source code of ReadControl, an open-source macOS app, ` +
@@ -36,6 +42,18 @@ function Link({ href, children }: { href: string; children: ReactNode }) {
 }
 
 const QUESTIONS: { q: string; a: ReactNode }[] = [
+  {
+    q: "Where do I get the browser extension?",
+    a: (
+      <>
+        Install it from the{" "}
+        <Link href={CHROME_EXTENSION}>Chrome Web Store</Link> (also Edge, Brave,
+        and other Chromium browsers) or{" "}
+        <Link href={FIREFOX_EXTENSION}>Firefox Add-ons</Link>, then click its
+        toolbar button to save any page.
+      </>
+    ),
+  },
   {
     q: "How much does the app cost?",
     a: (

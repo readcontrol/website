@@ -76,7 +76,7 @@ export type Feature = {
 export const FEATURES: Feature[] = [
   {
     title: "For readers",
-    lead: "Navigate and manage your readings",
+    lead: "Navigate and manage your articles",
     bullets: [
       "Unread list",
       "Typography config",
@@ -101,7 +101,7 @@ export const FEATURES: Feature[] = [
   },
   {
     title: "They are just files",
-    lead: "Every reading is a Markdown file on your disk",
+    lead: "Every article is a Markdown file on your disk",
     bullets: [
       "YAML frontmatter",
       "Open in any editor",

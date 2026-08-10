@@ -69,7 +69,8 @@ export default function Letter() {
 
         <div className="mt-8 space-y-7 text-lg leading-[1.85] text-fg md:text-xl md:leading-[1.8]">
           <p>
-            ReadControl lets you manage your readings easily.
+            ReadControl helps you save articles from the web and read them
+            whenever you want.
           </p>
 
           <p>
@@ -82,7 +83,7 @@ export default function Letter() {
 
           <p>
             <Highlight>Highlight</Highlight>, <TagInput />, and{" "}
-            <FavoriteWord>favorite</FavoriteWord> your readings, and build a
+            <FavoriteWord>favorite</FavoriteWord> your articles, and build a
             library of everything you have ever come across. Then use the{" "}
             <FilterWord /> to find the one you want to send to a friend.
           </p>
@@ -100,7 +101,7 @@ export default function Letter() {
             <RatingStars />
           </p>
 
-          <p>Enjoy your readings!</p>
+          <p>Happy readings!</p>
         </div>
 
         <p className="mt-10">
