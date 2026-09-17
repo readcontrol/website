@@ -6,6 +6,17 @@
     <description>Updates for ReadControl.</description>
     <language>en</language>
     <item>
+      <title>0.3.1</title>
+      <sparkle:version>5</sparkle:version>
+      <sparkle:shortVersionString>0.3.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/readcontrol/macos/releases/download/v0.3.1/ReadControl-0.3.1.dmg"
+        sparkle:edSignature="yQgE6DHw4lCsggeP+ia+nj1TpVhFPDqxu8GEAI/dQKp1M7ujN5onMIbEzOaEz0aOgeAyVkRlCdjQxiGWJhNwAA=="
+        length="11597453"
+        type="application/octet-stream" />
+    </item>
+    <item>
       <title>0.3.0</title>
       <sparkle:version>4</sparkle:version>
       <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
